@@ -3,12 +3,22 @@
 #include <string.h>
 #include <sys/stat.h>
 
+
+// assign some constants
+#define POSITION_MODE      0
+#define IMMEDIATE_MODE     1
+#define OPCODE_PLUS_THREE  4
+#define OPCODE_PLUS_TWO    3
+#define OPCODE_PLUS_ONE    2
+#define OPCODE_PLUS_ZERO   1
+
+
 struct instruction
 {
 	int opcode;
-	int param0Mode;
 	int param1Mode;
 	int param2Mode;
+	int param3Mode;
 	int rawInstruction;
 };
 
@@ -43,31 +53,52 @@ struct instruction parseInstruction(int rawInstruction)
 	tmpInstruction.opcode = rawInstruction % 100;
 
 	// separate the modes from the opcode
-	int modes = rawInstruction / 100;
-
-	// split the modes
-	char* strModes;
-	int numChars = 3;
-	strModes = malloc(numChars * sizeof(char));
-	snprintf(strModes, numChars, "%d", modes);
-	char* param0Mode = malloc(2 * sizeof(char));
-	char* param1Mode = malloc(2 * sizeof(char));
-	char* param2Mode = malloc(2 * sizeof(char));
-	snprintf(param0Mode, 2, "%c", strModes[2]);
-	snprintf(param1Mode, 2, "%c", strModes[1]);
-	snprintf(param2Mode, 2, "%c", strModes[0]);
-	tmpInstruction.param0Mode = atoi(param0Mode);
-	tmpInstruction.param1Mode = atoi(param1Mode);
-	tmpInstruction.param2Mode = atoi(param2Mode);
+	tmpInstruction.param1Mode = rawInstruction / 100 % 10; 
+	tmpInstruction.param2Mode = rawInstruction / 1000 % 10;
+	tmpInstruction.param3Mode = rawInstruction / 10000 % 10;
 
 	return tmpInstruction;
+}
+
+
+int derefParam(int* curTokens, int curParam, int curParamMode)
+{
+	int retParam;
+	switch (curParamMode){
+		case POSITION_MODE:
+			retParam = curTokens[curParam];
+			break;
+
+		case IMMEDIATE_MODE:
+			retParam = curParam;
+			break;
+
+		default:
+			printf("ERROR: bad parameter mode encountered");
+			break;
+	}
+
+	return retParam;
+}
+
+int getInput()
+{
+	char* cBuf;
+	cBuf = malloc(2 * sizeof(char));
+	printf("Enter an integer > ");
+	fgets(cBuf, 2, stdin);
+	
+	int c;
+	c = atoi(cBuf);
+	free(cBuf);
+
+	return c;
 }
 
 int main(int argc, char *argv[])
 {
 	// read in data	
 	char *data;
-	//data = readFile("/Users/jrittle_adm/src/advent-of-code-2019/src/day2/input.txt");
 	data = readFile("input.txt");	
 
 	// separate based on comma
@@ -90,24 +121,10 @@ int main(int argc, char *argv[])
 		tokens[i] = rawTokens[i];
 	}
 
-	// restore gravity assistant to 1202 program alarm state
-	//tokens[1] = 12;
-	//tokens[2] = 2;
-
-	// assign some constants
-	const int POSITION_MODE = 0;
-	const int IMMEDIATE_MODE = 0;
-	const int OPCODE_PLUS_THREE = 4;
-	const int OPCODE_PLUS_TWO   = 3;
-	const int OPCODE_PLUS_ONE   = 2;
-	const int OPCODE_PLUS_ZERO  = 1;
-
 	// start processing 
 	int halt = 0;
 	for (int cursor = 0; cursor < numTokens; cursor = cursor){
 		struct instruction curInstruction = parseInstruction(tokens[cursor]);
-
-		printf("Instruction: %d, Opcode: %d, Mode1: %d, Mode2: %d, Mode3: %d\n", curInstruction.rawInstruction, curInstruction.opcode, curInstruction.param0Mode, curInstruction.param1Mode, curInstruction.param2Mode);
 
 		int param1;
 		int param2;
@@ -117,27 +134,47 @@ int main(int argc, char *argv[])
 				param1 = tokens[cursor+1];
 				param2 = tokens[cursor+2];
 				param3 = tokens[cursor+3];
-				tokens[param3] = tokens[param1] + tokens[param2];
+
+				param1 = derefParam(tokens, param1, curInstruction.param1Mode);
+				param2 = derefParam(tokens, param2, curInstruction.param2Mode);
+				// param3 not run through this as it cannot ever be in a different mode
+				tokens[param3] = param1 + param2;
 
 				// increment the cursor by 4 (opcode + 3 params)
 				cursor += OPCODE_PLUS_THREE;
 				break;
+
 			case 2:
 				param1 = tokens[cursor+1];
 				param2 = tokens[cursor+2];
 				param3 = tokens[cursor+3];
-				tokens[param3] = tokens[param1] * tokens[param2];
+
+				param1 = derefParam(tokens, param1, curInstruction.param1Mode);
+				param2 = derefParam(tokens, param2, curInstruction.param2Mode);
+				// param3 not run through this as it cannot ever be in a different mode
+				tokens[param3] = param1 * param2;
 
 				// increment the cursor by 4 (opcode + 3 params)
 				cursor += OPCODE_PLUS_THREE;
 				break;
 
 			case 3:
+				param1 = tokens[cursor+1]; // param1 not run through deref as it cannot ever be in a different mode
+
+				// write input to the specified location
+				tokens[param1] = getInput();
+
 				// increment the cursor by 2 (opcode + 1 param)
 				cursor += OPCODE_PLUS_ONE;
 				break;
 
 			case 4:
+				param1 = tokens[cursor+1];
+				param1 = derefParam(tokens, param1, curInstruction.param1Mode);
+
+				// send result to output
+				printf("Value: %d\n", param1);
+
 				// increment the cursor by 2 (opcode + 1 param)
 				cursor += OPCODE_PLUS_ONE;
 				break;
@@ -147,15 +184,15 @@ int main(int argc, char *argv[])
 				break;
 
 			default:
-				//printf("ERROR: bad opcode (%d) at index %d\n", opcode, cursor);
+				printf("ERROR: bad opcode (%d) at index %d\n", curInstruction.opcode, cursor);
+				exit(1);
 				break;
 		}
+
 		if (halt == 1){
 			break;
 		}
 	}
-
-	printf("Position 0: %d\n", tokens[0]);
 
 	return 0;
 }
