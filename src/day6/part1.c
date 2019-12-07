@@ -38,48 +38,47 @@ int main(int argc, char *argv[])
 
 	// define some vars
 	const int MAX_PLANETS = 8192;
-	structure planet *planets[MAX_PLANETS];
+	//structure planet *planets[MAX_PLANETS];
+	char *orbitees[MAX_PLANETS];
+	char *orbiters[MAX_PLANETS];
 	int planetIndex = 0;
 	
 	// separate based on newline
 	char* lineToken;
+	char* planetToken;
+	int lineIndex = 0;
 	while((lineToken = strsep(&data, "\n"))){
 		if (lineToken == '\0'){
 			break;
 		}
 
 		// separate based on ')' to get a list of planet names
-		char* planetToken;
+		int orbiter = 0;
 		while((planetToken = strsep(&lineToken, ")"))){
 			if (planetToken == '\0'){
 				break;
 			}
 
-			int exists = 0;
-			for (int i = 0; i < planetIndex; i++){
-				if (strcmp(planetToken, planets[i].id) == 0){
-					exists = 1;
-					break;
-				}
+
+
+			if (orbiter == 1){
+				orbiters[lineIndex] = planetToken;
+				printf("%s\n", orbiters[lineIndex]);
+			} else{
+				orbitees[lineIndex] = planetToken;
+				orbiter = 1;
+				printf("%s)", orbitees[lineIndex]);
 			}
 
-			if (exists == 0){ 
-				// track planet name for easier comparison
 
-
-				struct planet newPlanet;
-				newPlanet.name = planetToken;
-
-
-
-
-				planets[i].id = planetToken;
-				planetIndex++;
-
-				// build 
-			}
 		}
+		lineIndex++;
 	}
+
+	
+//	for (int i = 0; i < lineIndex; i++){
+//		printf("%s)%s\n", orbitees[lineIndex], orbiters[lineIndex]);
+//	}
 
 	return 0;
 }
