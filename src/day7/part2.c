@@ -23,6 +23,14 @@
 #define OPCODE_PLUS_ONE    2
 #define OPCODE_PLUS_ZERO   1
 
+#define NO_INTERRUPT       0
+#define INPUT_INTERRUPT    3
+#define OUTPUT_INTERRUPT   4
+#define HALT_INTERRUPT     99
+
+#define TRUE               1
+#define FALSE              0
+
 
 struct instruction
 {
@@ -45,8 +53,7 @@ struct cpuStruct
 	int instructionPointer;
 	int input;
 	int output;
-	int halt;
-	int pause;
+	int interrupt;
 };
 
 char* readFile(char* filename)
@@ -176,6 +183,9 @@ struct cpuStruct runProgram(struct cpuStruct cpu)
 {
 	// start processing 
 	while (cpu.instructionPointer < cpu.programSize){
+
+		printf("%d\n", cpu.programBuffer[cpu.instructionPointer]);
+
 		struct instruction curInstruction = parseInstruction(cpu.programBuffer[cpu.instructionPointer]);
 
 		// swtich on opcode
@@ -209,11 +219,11 @@ struct cpuStruct runProgram(struct cpuStruct cpu)
 				break;
 
 			case FUNC_INPUT:
-				if (cpu.pause == 0){
-					cpu.pause = 1;
+				if (cpu.interrupt == NO_INTERRUPT){
+					cpu.interrupt = INPUT_INTERRUPT;
 					break;
 				}
-				cpu.pause = 0;
+				cpu.interrupt = NO_INTERRUPT;
 
 				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1]; // param1 not run through deref as it cannot ever be in a different mode
 
@@ -225,14 +235,25 @@ struct cpuStruct runProgram(struct cpuStruct cpu)
 				break;
 
 			case FUNC_OUTPUT:
+				if (cpu.interrupt == OUTPUT_INTERRUPT){
+					cpu.interrupt = NO_INTERRUPT;
+					
+					// increment the cursor by 2 (opcode + 1 param)
+					cpu.instructionPointer += OPCODE_PLUS_ONE;
+					break;
+				}
+
 				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1];
 				curInstruction.params[0] = derefParam(cpu.programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
 
 				// send result to output
 				cpu.output = curInstruction.params[0];
 
-				// increment the cursor by 2 (opcode + 1 param)
-				cpu.instructionPointer += OPCODE_PLUS_ONE;
+				// break for output
+				cpu.interrupt = OUTPUT_INTERRUPT;
+
+				// we don't increment the instruction pointer here yet as we will need to clear the interrupt when execution returns
+
 				break;
 
 			case FUNC_JUMP_TRUE:
@@ -302,7 +323,7 @@ struct cpuStruct runProgram(struct cpuStruct cpu)
 				break;
 
 			case FUNC_HALT:
-				cpu.halt = 1;
+				cpu.interrupt = HALT_INTERRUPT;
 				break;
 
 			default:
@@ -311,7 +332,7 @@ struct cpuStruct runProgram(struct cpuStruct cpu)
 				break;
 		}
 
-		if (cpu.halt == 1 || cpu.pause == 1){
+		if (cpu.interrupt != NO_INTERRUPT ){
 			break;
 		}
 	}
@@ -348,7 +369,8 @@ int main(int argc, char *argv[])
 
 	// setup an array to hold all possible phase groups
 	char *initialRawPhaseGroup = "98765";
-	int numPhaseGroups = 120; // 5 * 4 * 3 * 2 * 1
+//	int numPhaseGroups = 120; // 5 * 4 * 3 * 2 * 1
+	int numPhaseGroups = 1; // 5 * 4 * 3 * 2 * 1
 	struct phaseGroupStruct phaseGroups[numPhaseGroups];
 
 	// build initial phase group
@@ -362,52 +384,124 @@ int main(int argc, char *argv[])
 
 	// add all possible phase groups 
 	phaseGroups[0] = initialPhaseGroup;
-	for (int i = 0; i < (numPhaseGroups-1); i++){ // minus one comes from adding the initial phase group
-		phaseGroups[i+1] = getPermutationEntry(initialPhaseGroup, i);
-	}
+//	for (int i = 0; i < (numPhaseGroups-1); i++){ // minus one comes from adding the initial phase group
+//		phaseGroups[i+1] = getPermutationEntry(initialPhaseGroup, i);
+//	}
 
-	struct cpuStruct cpu;
-	cpu.programSize = numTokens;
-	cpu.programBuffer = tokens;
+
 	int numPhases = 5;
 	int largestOutput = 0;
-	for (int i = 0; i < numPhaseGroups; i++){
-		// reset output between tests of permutations
-		cpu.output = 0;
-		cpu.halt = 0;
+	int firstRun = 1;
+	struct cpuStruct cpus[numPhases];
+	for (int i = 0; i < numPhases; i++){
+		struct cpuStruct cpu;
+		cpu.programSize = numTokens;
+		cpu.programBuffer = tokens;
+		cpus[i] = cpu;
+	}
 
-		// start execution loop
+
+	for (int phaseGroupIndex = 0; phaseGroupIndex < numPhaseGroups; phaseGroupIndex++){
+		// reset output between tests of permutations
+		for (int i = 0; i < numPhases; i++){
+			cpus[i].output = 55;
+			cpus[i].interrupt = NO_INTERRUPT;
+		}
+
+		// run execution loop until halted
 		int phaseIndex = 0;
-		while(cpu.halt != 1){
+		while(cpus[phaseIndex].interrupt != HALT_INTERRUPT){
+			// print some diagnostic info
+			printf("PhaseIndex: %d\n", phaseIndex);
+
 			// initialize cpu
-			cpu.instructionPointer = 0;
-			cpu.halt = 0;
-			cpu.pause = 1;
-			int setPhase = 1;
+			cpus[phaseIndex].instructionPointer = 0;
+			cpus[phaseIndex].interrupt = NO_INTERRUPT;
+			int setPhase = TRUE;
+			int oldPhaseIndex;
 
 			// run until a pause is encountered
 			// during the first pause, pass in the current phase
 			// during all subsequent pauses (just one in this case) pass in the prior output
-			while (cpu.pause == 1){
-				if (setPhase == 1){
-					cpu.input = phaseGroups[i].phases[phaseIndex];
-					setPhase = 0;
-				} else{
-					cpu.input = cpu.output;
-				}
-				cpu = runProgram(cpu);
-			}
+			//while (cpus[phaseIndex].interrupt != HALT_INTERRUPT){
+			switch(cpus[phaseIndex].interrupt){
+				// handle cases where an interrupt doesn't need triggered
+				case NO_INTERRUPT:
+					break;
 
-			phaseIndex++;
-			if (phaseIndex >= numPhases){
-				phaseIndex = 0;
+				// handle input requests
+				case INPUT_INTERRUPT:
+					// first input is always the phase
+					if (setPhase == TRUE){
+						cpus[phaseIndex].input = phaseGroups[phaseGroupIndex].phases[phaseIndex];
+						setPhase = FALSE;
+					} 
+					// subsequent input comes from the last amp's output (except for very first run)
+					else
+					{
+						if (firstRun == TRUE){
+							cpus[phaseIndex].input = 0;
+							firstRun = FALSE;
+						} else {
+							// when phaseIndex is zero on non-first runs, get output from last amp in line
+							if (phaseIndex == 0){
+								cpus[phaseIndex].input = cpus[numPhases-1].output;
+							} 
+							// otherwise just get output from last amp
+							else{
+								cpus[phaseIndex].input = cpus[phaseIndex-1].output;
+							}
+						}
+					}
+					break;
+				case OUTPUT_INTERRUPT:
+					// pass output into the next amp
+					// if the current amp is the last in line, go back to the beginning
+					if (phaseIndex == (numPhases-1)){
+						oldPhaseIndex = phaseIndex;
+						phaseIndex = 0;
+					}
+					// otherwise just run the next one
+					else{
+						oldPhaseIndex = phaseIndex;
+						phaseIndex++;
+					}
+
+
+
+					cpus[phaseIndex].input = cpus[oldPhaseIndex].output;
+					cpus[phaseIndex].instructionPointer = 0;
+					cpus[phaseIndex].interrupt = NO_INTERRUPT;
+					cpus[phaseIndex] = runProgram(cpus[phaseIndex]);
+
+
+					
+					break;
+
+				default:
+					printf("ERROR: You didn't handle this interrupt case: %d\n", cpus[phaseIndex].interrupt);
+					exit(1);
+					break;
 			}
-			printf("Phase: %d\n", phaseIndex);
+			cpus[phaseIndex] = runProgram(cpus[phaseIndex]);
 		}
 
+//			phaseIndex++;
+//			if (phaseIndex >= numPhases){
+//				phaseIndex = 0;
+//			}
+		
+
+
+		if (cpus[phaseIndex].interrupt == HALT_INTERRUPT){
+			printf("got to a halt\n");
+			break;
+		}
+//		}
+
 		// keep track of the largest result
-		if (cpu.output > largestOutput){
-			largestOutput = cpu.output;
+		if (cpus[phaseIndex].output > largestOutput){
+			largestOutput = cpus[phaseIndex].output;
 		}
 	}
 
