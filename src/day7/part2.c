@@ -179,173 +179,167 @@ struct phaseGroupStruct getPermutationEntry(struct phaseGroupStruct initialPhase
 	return retPhaseGroup;
 }
 
-struct cpuStruct runProgram(struct cpuStruct cpu)
+void runProgram(struct cpuStruct *cpu)
 {
 	// start processing 
-	while (cpu.instructionPointer < cpu.programSize){
-
-		printf("%d\n", cpu.programBuffer[cpu.instructionPointer]);
-
-		struct instruction curInstruction = parseInstruction(cpu.programBuffer[cpu.instructionPointer]);
+	while (cpu->instructionPointer < cpu->programSize){
+		struct instruction curInstruction = parseInstruction(cpu->programBuffer[cpu->instructionPointer]);
 
 		// swtich on opcode
 		switch(curInstruction.opcode){
 			case FUNC_ADD:
-				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1];
-				curInstruction.params[1] = cpu.programBuffer[cpu.instructionPointer+2];
-				curInstruction.params[2] = cpu.programBuffer[cpu.instructionPointer+3];
+				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
+				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
+				curInstruction.params[2] = cpu->programBuffer[cpu->instructionPointer+3];
 
-				curInstruction.params[0] = derefParam(cpu.programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
-				curInstruction.params[1] = derefParam(cpu.programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
+				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
+				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
 				// param3 not run through this as it cannot ever be in a different mode
-				cpu.programBuffer[curInstruction.params[2]] = curInstruction.params[0] + curInstruction.params[1];
+				cpu->programBuffer[curInstruction.params[2]] = curInstruction.params[0] + curInstruction.params[1];
 
 				// increment the cursor by 4 (opcode + 3 params)
-				cpu.instructionPointer += OPCODE_PLUS_THREE;
+				cpu->instructionPointer += OPCODE_PLUS_THREE;
 				break;
 
 			case FUNC_MULT:
-				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1];
-				curInstruction.params[1] = cpu.programBuffer[cpu.instructionPointer+2];
-				curInstruction.params[2] = cpu.programBuffer[cpu.instructionPointer+3];
+				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
+				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
+				curInstruction.params[2] = cpu->programBuffer[cpu->instructionPointer+3];
 
-				curInstruction.params[0] = derefParam(cpu.programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
-				curInstruction.params[1] = derefParam(cpu.programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
+				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
+				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
 				// param3 not run through this as it cannot ever be in a different mode
-				cpu.programBuffer[curInstruction.params[2]] = curInstruction.params[0] * curInstruction.params[1];
+				cpu->programBuffer[curInstruction.params[2]] = curInstruction.params[0] * curInstruction.params[1];
 
 				// increment the cursor by 4 (opcode + 3 params)
-				cpu.instructionPointer += OPCODE_PLUS_THREE;
+				cpu->instructionPointer += OPCODE_PLUS_THREE;
 				break;
 
 			case FUNC_INPUT:
-				if (cpu.interrupt == NO_INTERRUPT){
-					cpu.interrupt = INPUT_INTERRUPT;
+				if (cpu->interrupt == NO_INTERRUPT){
+					cpu->interrupt = INPUT_INTERRUPT;
 					break;
 				}
-				cpu.interrupt = NO_INTERRUPT;
+				cpu->interrupt = NO_INTERRUPT;
 
-				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1]; // param1 not run through deref as it cannot ever be in a different mode
+				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1]; // param1 not run through deref as it cannot ever be in a different mode
 
 				// write input to the specified location
-				cpu.programBuffer[curInstruction.params[0]] = cpu.input;
+				cpu->programBuffer[curInstruction.params[0]] = cpu->input;
 
 				// increment the cursor by 2 (opcode + 1 param)
-				cpu.instructionPointer += OPCODE_PLUS_ONE;
+				cpu->instructionPointer += OPCODE_PLUS_ONE;
 				break;
 
 			case FUNC_OUTPUT:
-				if (cpu.interrupt == OUTPUT_INTERRUPT){
-					cpu.interrupt = NO_INTERRUPT;
-					
-					// increment the cursor by 2 (opcode + 1 param)
-					cpu.instructionPointer += OPCODE_PLUS_ONE;
-					break;
+				if (cpu->interrupt == NO_INTERRUPT){
+					curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
+					curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
+
+					// send result to output
+					cpu->output = curInstruction.params[0];
+
+					// set the interrupt
+					cpu->interrupt = OUTPUT_INTERRUPT;
 				}
+				// otherwise continue
+				else{
+					// reset interrupt
+					cpu->interrupt = NO_INTERRUPT;
 
-				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1];
-				curInstruction.params[0] = derefParam(cpu.programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
-
-				// send result to output
-				cpu.output = curInstruction.params[0];
-
-				// break for output
-				cpu.interrupt = OUTPUT_INTERRUPT;
-
-				// we don't increment the instruction pointer here yet as we will need to clear the interrupt when execution returns
-
+					// increment the cursor by 2 (opcode + 1 param)
+					cpu->instructionPointer += OPCODE_PLUS_ONE;
+				}
 				break;
 
 			case FUNC_JUMP_TRUE:
-				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1];
-				curInstruction.params[1] = cpu.programBuffer[cpu.instructionPointer+2];
+				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
+				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
 
-				curInstruction.params[0] = derefParam(cpu.programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
-				curInstruction.params[1] = derefParam(cpu.programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
+				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
+				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
 
 				if (curInstruction.params[0] != 0){
-					cpu.instructionPointer = curInstruction.params[1];
+					cpu->instructionPointer = curInstruction.params[1];
 				} else {
-					cpu.instructionPointer += OPCODE_PLUS_TWO;
+					cpu->instructionPointer += OPCODE_PLUS_TWO;
 				}
 
 				break;
 
 			case FUNC_JUMP_FALSE:
-				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1];
-				curInstruction.params[1] = cpu.programBuffer[cpu.instructionPointer+2];
+				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
+				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
 
-				curInstruction.params[0] = derefParam(cpu.programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
-				curInstruction.params[1] = derefParam(cpu.programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
+				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
+				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
 
 				if (curInstruction.params[0] == 0){
-					cpu.instructionPointer = curInstruction.params[1];
+					cpu->instructionPointer = curInstruction.params[1];
 				} else {
-					cpu.instructionPointer += OPCODE_PLUS_TWO;
+					cpu->instructionPointer += OPCODE_PLUS_TWO;
 				}
 
 				break;
 
 			case FUNC_LESS_THAN:
-				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1];
-				curInstruction.params[1] = cpu.programBuffer[cpu.instructionPointer+2];
-				curInstruction.params[2] = cpu.programBuffer[cpu.instructionPointer+3];
+				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
+				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
+				curInstruction.params[2] = cpu->programBuffer[cpu->instructionPointer+3];
 
-				curInstruction.params[0] = derefParam(cpu.programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
-				curInstruction.params[1] = derefParam(cpu.programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
+				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
+				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
 				// param3 not run through this as it cannot ever be in a different mode
 
 				if (curInstruction.params[0] < curInstruction.params[1]){
-					cpu.programBuffer[curInstruction.params[2]] = 1;
+					cpu->programBuffer[curInstruction.params[2]] = 1;
 				} else {
-					cpu.programBuffer[curInstruction.params[2]] = 0;
+					cpu->programBuffer[curInstruction.params[2]] = 0;
 				}
 
-				cpu.instructionPointer += OPCODE_PLUS_THREE;
+				cpu->instructionPointer += OPCODE_PLUS_THREE;
 				break;
 
 			case FUNC_EQUAL:
-				curInstruction.params[0] = cpu.programBuffer[cpu.instructionPointer+1];
-				curInstruction.params[1] = cpu.programBuffer[cpu.instructionPointer+2];
-				curInstruction.params[2] = cpu.programBuffer[cpu.instructionPointer+3];
+				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
+				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
+				curInstruction.params[2] = cpu->programBuffer[cpu->instructionPointer+3];
 
-				curInstruction.params[0] = derefParam(cpu.programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
-				curInstruction.params[1] = derefParam(cpu.programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
+				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0]);
+				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1]);
 				// param3 not run through this as it cannot ever be in a different mode
 
 				if (curInstruction.params[0] == curInstruction.params[1]){
-					cpu.programBuffer[curInstruction.params[2]] = 1;
+					cpu->programBuffer[curInstruction.params[2]] = 1;
 				} else {
-					cpu.programBuffer[curInstruction.params[2]] = 0;
+					cpu->programBuffer[curInstruction.params[2]] = 0;
 				}
 
-				cpu.instructionPointer += OPCODE_PLUS_THREE;	
+				cpu->instructionPointer += OPCODE_PLUS_THREE;	
 				break;
 
 			case FUNC_HALT:
-				cpu.interrupt = HALT_INTERRUPT;
+				cpu->interrupt = HALT_INTERRUPT;
 				break;
 
 			default:
-				printf("ERROR: bad opcode (%d) at index %d\n", curInstruction.opcode, cpu.instructionPointer);
+				printf("ERROR: bad opcode (%d) at index %d\n", curInstruction.opcode, cpu->instructionPointer);
 				exit(1);
 				break;
 		}
 
-		if (cpu.interrupt != NO_INTERRUPT ){
+		if (cpu->interrupt != NO_INTERRUPT){
 			break;
 		}
 	}
-
-	return cpu;
 }
 
 int main(int argc, char *argv[])
 {
 	// read in data	
 	char *data;
-	//data = readFile("input.txt");	
-	data = readFile("test.txt");	
+	data = readFile("input.txt");	
+	//data = readFile("test.txt");	
 
 	// separate based on comma
 	char* token;
@@ -367,141 +361,138 @@ int main(int argc, char *argv[])
 		tokens[i] = rawTokens[i];
 	}
 
+
+
+
+
 	// setup an array to hold all possible phase groups
-	char *initialRawPhaseGroup = "98765";
-//	int numPhaseGroups = 120; // 5 * 4 * 3 * 2 * 1
-	int numPhaseGroups = 1; // 5 * 4 * 3 * 2 * 1
+	char *initialRawPhaseGroup = "56789";
+	int numPhaseGroups = 120; // 5 * 4 * 3 * 2 * 1
 	struct phaseGroupStruct phaseGroups[numPhaseGroups];
 
 	// build initial phase group
 	struct phaseGroupStruct initialPhaseGroup;
 	initialPhaseGroup.rawPhaseGroup = initialRawPhaseGroup;
-	initialPhaseGroup.phases[0] = 9;
-	initialPhaseGroup.phases[1] = 8;
+	initialPhaseGroup.phases[0] = 5;
+	initialPhaseGroup.phases[1] = 6;
 	initialPhaseGroup.phases[2] = 7;
-	initialPhaseGroup.phases[3] = 6;
-	initialPhaseGroup.phases[4] = 5;
+	initialPhaseGroup.phases[3] = 8;
+	initialPhaseGroup.phases[4] = 9;
 
 	// add all possible phase groups 
 	phaseGroups[0] = initialPhaseGroup;
-//	for (int i = 0; i < (numPhaseGroups-1); i++){ // minus one comes from adding the initial phase group
-//		phaseGroups[i+1] = getPermutationEntry(initialPhaseGroup, i);
-//	}
+	for (int i = 0; i < (numPhaseGroups-1); i++){ // minus one comes from adding the initial phase group
+		phaseGroups[i+1] = getPermutationEntry(initialPhaseGroup, i);
+	}
+
+
+
+
+// //TESTING
+//	// setup an array to hold all possible phase groups
+//	char *initialRawPhaseGroup = "98765";
+//	int numPhaseGroups = 1; // 5 * 4 * 3 * 2 * 1
+//	struct phaseGroupStruct phaseGroups[numPhaseGroups];
+//
+//	// build initial phase group
+//	struct phaseGroupStruct initialPhaseGroup;
+//	initialPhaseGroup.rawPhaseGroup = initialRawPhaseGroup;
+//	initialPhaseGroup.phases[0] = 9;
+//	initialPhaseGroup.phases[1] = 7;
+//	initialPhaseGroup.phases[2] = 8;
+//	initialPhaseGroup.phases[3] = 5;
+//	initialPhaseGroup.phases[4] = 6;
+//	phaseGroups[0] = initialPhaseGroup;
+
+
+
 
 
 	int numPhases = 5;
 	int largestOutput = 0;
-	int firstRun = 1;
-	struct cpuStruct cpus[numPhases];
-	for (int i = 0; i < numPhases; i++){
-		struct cpuStruct cpu;
-		cpu.programSize = numTokens;
-		cpu.programBuffer = tokens;
-		cpus[i] = cpu;
-	}
-
-
 	for (int phaseGroupIndex = 0; phaseGroupIndex < numPhaseGroups; phaseGroupIndex++){
-		// reset output between tests of permutations
+
+		// create a group of cpu structs
+		struct cpuStruct cpus[numPhases];
 		for (int i = 0; i < numPhases; i++){
-			cpus[i].output = 55;
-			cpus[i].interrupt = NO_INTERRUPT;
+			struct cpuStruct curCpu;
+			curCpu.output = 0;  // reset output between permutations
+			curCpu.programSize = numTokens;
+			curCpu.programBuffer = malloc(numTokens * sizeof(int));
+			for (int i = 0; i < curCpu.programSize; i++){
+				curCpu.programBuffer[i] = tokens[i];
+			}
+			curCpu.instructionPointer = 0;
+			curCpu.interrupt = NO_INTERRUPT;
+			cpus[i] = curCpu;
 		}
 
-		// run execution loop until halted
+
+
+
+
+		// start execution loop
+		int firstRun = TRUE;
 		int phaseIndex = 0;
-		while(cpus[phaseIndex].interrupt != HALT_INTERRUPT){
-			// print some diagnostic info
-			printf("PhaseIndex: %d\n", phaseIndex);
+		int halt = FALSE;
+		int cpuPhaseSettings[numPhases];
 
-			// initialize cpu
-			cpus[phaseIndex].instructionPointer = 0;
-			cpus[phaseIndex].interrupt = NO_INTERRUPT;
-			int setPhase = TRUE;
-			int oldPhaseIndex;
+		for (int i = 0; i < numPhases; i++){
+			cpuPhaseSettings[i] = TRUE;
+		}
 
-			// run until a pause is encountered
-			// during the first pause, pass in the current phase
-			// during all subsequent pauses (just one in this case) pass in the prior output
-			//while (cpus[phaseIndex].interrupt != HALT_INTERRUPT){
+		// run until a pause is encountered
+		// during the first pause, pass in the current phase
+		// during all subsequent pauses (just one in this case) pass in the prior output
+		while (halt == FALSE){
 			switch(cpus[phaseIndex].interrupt){
-				// handle cases where an interrupt doesn't need triggered
-				case NO_INTERRUPT:
-					break;
-
-				// handle input requests
 				case INPUT_INTERRUPT:
-					// first input is always the phase
-					if (setPhase == TRUE){
+					if (cpuPhaseSettings[phaseIndex] == TRUE){
 						cpus[phaseIndex].input = phaseGroups[phaseGroupIndex].phases[phaseIndex];
-						setPhase = FALSE;
-					} 
-					// subsequent input comes from the last amp's output (except for very first run)
-					else
-					{
+						cpuPhaseSettings[phaseIndex] = FALSE;
+					} else{
 						if (firstRun == TRUE){
 							cpus[phaseIndex].input = 0;
 							firstRun = FALSE;
-						} else {
-							// when phaseIndex is zero on non-first runs, get output from last amp in line
+						} else{
 							if (phaseIndex == 0){
 								cpus[phaseIndex].input = cpus[numPhases-1].output;
-							} 
-							// otherwise just get output from last amp
-							else{
+							} else{
 								cpus[phaseIndex].input = cpus[phaseIndex-1].output;
 							}
 						}
 					}
+					runProgram(&cpus[phaseIndex]);
 					break;
+
 				case OUTPUT_INTERRUPT:
-					// pass output into the next amp
-					// if the current amp is the last in line, go back to the beginning
 					if (phaseIndex == (numPhases-1)){
-						oldPhaseIndex = phaseIndex;
 						phaseIndex = 0;
-					}
-					// otherwise just run the next one
-					else{
-						oldPhaseIndex = phaseIndex;
+						runProgram(&cpus[phaseIndex]);
+					} else{
 						phaseIndex++;
+						runProgram(&cpus[phaseIndex]);
 					}
 
+					break;
 
+				case NO_INTERRUPT:
+					runProgram(&cpus[phaseIndex]);
+					break;
 
-					cpus[phaseIndex].input = cpus[oldPhaseIndex].output;
-					cpus[phaseIndex].instructionPointer = 0;
-					cpus[phaseIndex].interrupt = NO_INTERRUPT;
-					cpus[phaseIndex] = runProgram(cpus[phaseIndex]);
-
-
-					
+				case HALT_INTERRUPT:
+					halt = TRUE;
 					break;
 
 				default:
-					printf("ERROR: You didn't handle this interrupt case: %d\n", cpus[phaseIndex].interrupt);
+					printf("Bad interrupt encountered\n");
 					exit(1);
-					break;
 			}
-			cpus[phaseIndex] = runProgram(cpus[phaseIndex]);
 		}
-
-//			phaseIndex++;
-//			if (phaseIndex >= numPhases){
-//				phaseIndex = 0;
-//			}
 		
-
-
-		if (cpus[phaseIndex].interrupt == HALT_INTERRUPT){
-			printf("got to a halt\n");
-			break;
-		}
-//		}
-
 		// keep track of the largest result
-		if (cpus[phaseIndex].output > largestOutput){
-			largestOutput = cpus[phaseIndex].output;
+		if (cpus[numPhases-1].output > largestOutput){
+			largestOutput = cpus[numPhases-1].output;
 		}
 	}
 
