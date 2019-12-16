@@ -92,12 +92,12 @@ struct instruction parseInstruction(int rawInstruction)
 }
 
 
-double derefParam(double* programBuffer, double curParam, int curParamMode, int relativeBase)
+double derefParam(struct cpuStruct *curCpu, double curParam, int curParamMode, int curOpcode)
 {
 	double retParam;
 	switch (curParamMode){
 		case POSITION_MODE:
-			retParam = programBuffer[(int)curParam];
+			retParam = curCpu->programBuffer[(int)curParam];
 			break;
 
 		case IMMEDIATE_MODE:
@@ -105,7 +105,13 @@ double derefParam(double* programBuffer, double curParam, int curParamMode, int 
 			break;
 
 		case RELATIVE_MODE:
-			retParam = programBuffer[relativeBase + (int)curParam];
+//			if (curOpcode == FUNC_INPUT){
+//				retParam = curCpu->relativeBase + (int)curParam;
+//			} else {
+//				retParam = curCpu->programBuffer[curCpu->relativeBase + (int)curParam];
+//			}
+
+			retParam = curCpu->programBuffer[curCpu->relativeBase + (int)curParam];
 			break;
 
 		default:
@@ -122,7 +128,11 @@ void runProgram(struct cpuStruct *cpu)
 	while (cpu->instructionPointer < cpu->programSize){
 		struct instruction curInstruction = parseInstruction(cpu->programBuffer[cpu->instructionPointer]);
 
-		printf("%d ", curInstruction.rawInstruction);
+//		printf("INSPTR: %d \nPROG: ", cpu->instructionPointer);
+//		for (int i = 0; i < (10*cpu->programSize); i++){
+//			printf("%0.0lf ", cpu->programBuffer[i]);
+//		}
+//		printf("\n\n");
 
 		// swtich on opcode
 		switch(curInstruction.opcode){
@@ -131,8 +141,8 @@ void runProgram(struct cpuStruct *cpu)
 				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
 				curInstruction.params[2] = cpu->programBuffer[cpu->instructionPointer+3];
 
-				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
-				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1], cpu->relativeBase);
+				curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
+				curInstruction.params[1] = derefParam(cpu, curInstruction.params[1], curInstruction.paramModes[1], curInstruction.opcode);
 				// param3 not run through this as it cannot ever be in a different mode
 				cpu->programBuffer[(int)curInstruction.params[2]] = curInstruction.params[0] + curInstruction.params[1];
 
@@ -145,8 +155,8 @@ void runProgram(struct cpuStruct *cpu)
 				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
 				curInstruction.params[2] = cpu->programBuffer[cpu->instructionPointer+3];
 
-				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
-				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1], cpu->relativeBase);
+				curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
+				curInstruction.params[1] = derefParam(cpu, curInstruction.params[1], curInstruction.paramModes[1], curInstruction.opcode);
 				// param3 not run through this as it cannot ever be in a different mode
 				cpu->programBuffer[(int)curInstruction.params[2]] = curInstruction.params[0] * curInstruction.params[1];
 
@@ -162,7 +172,7 @@ void runProgram(struct cpuStruct *cpu)
 				cpu->interrupt = NO_INTERRUPT;
 
 				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
-				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
+				curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
 
 				// write input to the specified location
 				cpu->programBuffer[(int)curInstruction.params[0]] = cpu->input;
@@ -174,14 +184,10 @@ void runProgram(struct cpuStruct *cpu)
 			case FUNC_OUTPUT:
 				if (cpu->interrupt == NO_INTERRUPT){
 					curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
-					curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
+					curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
 
 					// send result to output
 					cpu->output = curInstruction.params[0];
-
-//					for (int i = 0; i < cpu->programSize*4; i++){
-//						printf("%0.0lf ", cpu->programBuffer[i]);
-//					}
 
 					// set the interrupt
 					cpu->interrupt = OUTPUT_INTERRUPT;
@@ -200,8 +206,8 @@ void runProgram(struct cpuStruct *cpu)
 				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
 				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
 
-				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
-				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1], cpu->relativeBase);
+				curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
+				curInstruction.params[1] = derefParam(cpu, curInstruction.params[1], curInstruction.paramModes[1], curInstruction.opcode);
 
 				if (curInstruction.params[0] != 0){
 					cpu->instructionPointer = curInstruction.params[1];
@@ -215,8 +221,8 @@ void runProgram(struct cpuStruct *cpu)
 				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
 				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
 
-				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
-				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1], cpu->relativeBase);
+				curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
+				curInstruction.params[1] = derefParam(cpu, curInstruction.params[1], curInstruction.paramModes[1], curInstruction.opcode);
 
 				if (curInstruction.params[0] == 0){
 					cpu->instructionPointer = curInstruction.params[1];
@@ -231,8 +237,8 @@ void runProgram(struct cpuStruct *cpu)
 				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
 				curInstruction.params[2] = cpu->programBuffer[cpu->instructionPointer+3];
 
-				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
-				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1], cpu->relativeBase);
+				curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
+				curInstruction.params[1] = derefParam(cpu, curInstruction.params[1], curInstruction.paramModes[1], curInstruction.opcode);
 				// param3 not run through this as it cannot ever be in a different mode
 
 				if (curInstruction.params[0] < curInstruction.params[1]){
@@ -249,8 +255,8 @@ void runProgram(struct cpuStruct *cpu)
 				curInstruction.params[1] = cpu->programBuffer[cpu->instructionPointer+2];
 				curInstruction.params[2] = cpu->programBuffer[cpu->instructionPointer+3];
 
-				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
-				curInstruction.params[1] = derefParam(cpu->programBuffer, curInstruction.params[1], curInstruction.paramModes[1], cpu->relativeBase);
+				curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
+				curInstruction.params[1] = derefParam(cpu, curInstruction.params[1], curInstruction.paramModes[1], curInstruction.opcode);
 				// param3 not run through this as it cannot ever be in a different mode
 
 				if (curInstruction.params[0] == curInstruction.params[1]){
@@ -264,13 +270,11 @@ void runProgram(struct cpuStruct *cpu)
 
 			case FUNC_SET_REL:
 				curInstruction.params[0] = cpu->programBuffer[cpu->instructionPointer+1];
-				curInstruction.params[0] = derefParam(cpu->programBuffer, curInstruction.params[0], curInstruction.paramModes[0], cpu->relativeBase);
+				curInstruction.params[0] = derefParam(cpu, curInstruction.params[0], curInstruction.paramModes[0], curInstruction.opcode);
 
 				cpu->relativeBase += curInstruction.params[0];
-				
 				cpu->instructionPointer += OPCODE_PLUS_ONE;
 				break;
-
 
 			case FUNC_HALT:
 				cpu->interrupt = HALT_INTERRUPT;
