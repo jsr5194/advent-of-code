@@ -95,9 +95,16 @@ struct instruction parseInstruction(int rawInstruction)
 double derefParam(struct cpuStruct *curCpu, double curParam, int curParamMode, int curOpcode)
 {
 	double retParam;
+
 	switch (curParamMode){
+
 		case POSITION_MODE:
-			retParam = curCpu->programBuffer[(int)curParam];
+			if (curOpcode == FUNC_INPUT){
+				retParam = curParam;
+			} else{
+				retParam = curCpu->programBuffer[(int)curParam];
+			}
+			
 			break;
 
 		case IMMEDIATE_MODE:
@@ -105,13 +112,12 @@ double derefParam(struct cpuStruct *curCpu, double curParam, int curParamMode, i
 			break;
 
 		case RELATIVE_MODE:
-//			if (curOpcode == FUNC_INPUT){
-//				retParam = curCpu->relativeBase + (int)curParam;
-//			} else {
-//				retParam = curCpu->programBuffer[curCpu->relativeBase + (int)curParam];
-//			}
+			if (curOpcode == FUNC_INPUT){
+				retParam = curCpu->relativeBase + curParam;
+			} else{
+				retParam = curCpu->programBuffer[curCpu->relativeBase + (int)curParam];
+			}
 
-			retParam = curCpu->programBuffer[curCpu->relativeBase + (int)curParam];
 			break;
 
 		default:
