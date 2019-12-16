@@ -38,6 +38,9 @@
 #define DOWN               2
 #define LEFT               3
 
+#define BLACK              0
+#define WHITE              1
+
 
 struct coords
 {
@@ -384,6 +387,7 @@ int main(int argc, char *argv[])
 	int curY = maxY/2; 
 	int direction = UP;
 	int changePosition = FALSE;
+	grid[curY][curX].color = WHITE;
 
 
 
@@ -475,10 +479,17 @@ int main(int argc, char *argv[])
 	int numPainted = 0;
 	for (int y = 0; y < maxY; y++){
 		for (int x = 0; x < maxX; x++){
-			if (grid[y][x].painted == 1){
-				numPainted++;
+			switch(grid[y][x].color){
+				case BLACK:
+					printf(".");
+					break;
+
+				case WHITE:
+					printf("#");
+					break;
 			}
 		}
+		printf("\n");
 	}
 	printf("Answer: %d\n", numPainted);
 
