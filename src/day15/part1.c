@@ -43,8 +43,16 @@
 #define POSITION_OKAY      1
 #define POSITION_O2        2
 
-#define MAX_X              26
-#define MAX_Y              26
+#define MAX_X              51
+#define MAX_Y              51
+
+struct droid
+{
+	int x;
+	int y;
+	int direction;
+	int netSteps;
+};
 
 
 struct instruction
@@ -307,11 +315,11 @@ void runProgram(struct cpuStruct *cpu)
 	}
 }
 
-void printMap(int **map, int droidX, int droidY)
+void printMap(int **map, struct droid *repairDroid)
 {
 	for (int y = 0; y < MAX_Y; y++){
 		for (int x = 0; x < MAX_X; x++){
-			if (x == droidX && y == droidY){
+			if (x == repairDroid->x && y == repairDroid->y){
 				printf("D");
 			} else{
 				switch(map[y][x]){
@@ -331,6 +339,95 @@ void printMap(int **map, int droidX, int droidY)
 			}
 		}
 		printf("\n");
+	}
+}
+
+void getNextDirection(int** map, struct droid *repairDroid)
+{
+	int lastX = repairDroid->x;
+	int lastY = repairDroid->y;
+
+	switch(repairDroid->direction){
+		case NORTH:
+			lastY++;
+			break;
+		case SOUTH:
+			lastY--;
+			break;
+		case EAST:
+			lastX--;
+			break;
+		case WEST:
+			lastX++;
+			break;
+	}
+
+	// look for an unknown location
+	if (map[repairDroid->y][repairDroid->x+1] == POSITION_UNKNOWN){
+		repairDroid->direction = EAST;
+		repairDroid->netSteps++;
+	} else if (map[repairDroid->y][repairDroid->x-1] == POSITION_UNKNOWN){
+		repairDroid->direction = WEST;
+		repairDroid->netSteps++;
+	} else if (map[repairDroid->y+1][repairDroid->x] == POSITION_UNKNOWN){
+		repairDroid->direction = SOUTH;
+		repairDroid->netSteps++;
+	} else if (map[repairDroid->y-1][repairDroid->x] == POSITION_UNKNOWN){
+		repairDroid->direction = NORTH;
+		repairDroid->netSteps++;
+	} 
+
+	// check to see if we've hit a dead end - if so, go to the last good position 
+	//
+	//     ######
+	//         D#
+	//     ######
+	//
+	else if ((map[repairDroid->y][repairDroid->x+1] == POSITION_WALL) && (map[repairDroid->y-1][repairDroid->x] == POSITION_WALL) && (map[repairDroid->y+1][repairDroid->x] == POSITION_WALL)){
+		repairDroid->direction = WEST;
+	}
+
+	// check to see if we've hit a dead end - if so, go to the last good position 
+	//
+	//     ######
+	//     #D
+	//     ######
+	//
+	else if ((map[repairDroid->y][repairDroid->x-1] == POSITION_WALL) && (map[repairDroid->y-1][repairDroid->x] == POSITION_WALL) && (map[repairDroid->y+1][repairDroid->x] == POSITION_WALL)){
+		repairDroid->direction = EAST;
+	}
+
+	// check to see if we've hit a dead end - if so, go to the last good position 
+	//
+	//     ###
+	//     #D#
+	//     # #
+	//
+	else if ((map[repairDroid->y-1][repairDroid->x] == POSITION_WALL) && (map[repairDroid->y][repairDroid->x-1] == POSITION_WALL) && (map[repairDroid->y][repairDroid->x+1] == POSITION_WALL)){
+		repairDroid->direction = SOUTH;
+	}
+
+	// check to see if we've hit a dead end - if so, go to the last good position 
+	//
+	//     # #
+	//     #D#
+	//     ###
+	//
+	else if ((map[repairDroid->y+1][repairDroid->x] == POSITION_WALL) && (map[repairDroid->y][repairDroid->x-1] == POSITION_WALL) && (map[repairDroid->y][repairDroid->x+1] == POSITION_WALL)){
+		repairDroid->direction = NORTH;
+	}
+
+	// look for anything not a wall that isn't the last known position
+	else if ((repairDroid->y != lastY && repairDroid->x+1 != lastX) && (map[repairDroid->y][repairDroid->x+1] != POSITION_WALL)){
+		repairDroid->direction = EAST;
+	} else if ((repairDroid->y != lastY && repairDroid->x-1 != lastX) && (map[repairDroid->y][repairDroid->x-1] != POSITION_WALL)){
+		repairDroid->direction = WEST;
+	} else if ((repairDroid->y+1 != lastY && repairDroid->x != lastX) && (map[repairDroid->y+1][repairDroid->x] != POSITION_WALL)){
+		repairDroid->direction = SOUTH;
+	} else if ((repairDroid->y-1 != lastY && repairDroid->x != lastX) && (map[repairDroid->y-1][repairDroid->x] != POSITION_WALL)){
+		repairDroid->direction = NORTH;
+	} else{
+		printf("wtf\n");
 	}
 }
 
@@ -396,10 +493,12 @@ int main(int argc, char *argv[])
 	}
 
 	// initialize
-	int droidX = MAX_X/2+1;
-	int droidY = MAX_Y/2+1;
+	struct droid repairDroid;
+	repairDroid.x = MAX_X/2+1;
+	repairDroid.y = MAX_Y/2+1;
+	repairDroid.netSteps = 0;
 
-	printMap(map, droidX, droidY);
+	printMap(map, &repairDroid);
 
 	// run until a pause is encountered
 	// during the first pause, pass in the current phase
@@ -407,10 +506,62 @@ int main(int argc, char *argv[])
 	while (halt == FALSE){
 		switch(cpu.interrupt){
 			case INPUT_INTERRUPT:
+				//getchar();
+
+
+				getNextDirection(map, &repairDroid);
+
+
+				switch(repairDroid.direction){
+					case NORTH:
+						repairDroid.y--;
+						break;
+					case SOUTH:
+						repairDroid.y++;
+						break;
+					case EAST:
+						repairDroid.x++;
+						break;
+					case WEST:
+						repairDroid.x--;
+						break;
+				}
+
+				cpu.input = repairDroid.direction;
 				runProgram(&cpu);
 				break;
 
 			case OUTPUT_INTERRUPT:
+				// set the location type in the map
+				map[repairDroid.y][repairDroid.x] = cpu.output;
+
+				switch((int)cpu.output){
+					case POSITION_WALL:
+						// restore the repair droid location
+						switch(repairDroid.direction){
+							case NORTH:
+								repairDroid.y++;
+								break;
+							case SOUTH:
+								repairDroid.y--;
+								break;
+							case EAST:
+								repairDroid.x--;
+								break;
+							case WEST:
+								repairDroid.x++;
+								break;
+						}
+						break;
+
+					case POSITION_O2:
+						printMap(map, &repairDroid);
+						printf("O2 System Coordinates: (%d,%d)\n", repairDroid.x, repairDroid.y);
+						printf("Net Steps: %d\n", repairDroid.netSteps);
+						halt = TRUE;
+
+						break;
+				}
 				runProgram(&cpu);
 				break;
 
