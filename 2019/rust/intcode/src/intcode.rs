@@ -4,7 +4,7 @@ use std::fmt;
 #[derive(Debug)]
 pub struct IntcodeCpu {
 	pub ip: usize,
-	interrupt: bool,
+	pub interrupt: bool,
 }
 
 impl fmt::Display for IntcodeCpu {
@@ -22,32 +22,21 @@ impl IntcodeCpu {
 		self.ip = 0;
 
 		// split out the program into parsable elements and convert to a vector
-		// TODO: figure out why this works
 		let prog: Vec<&str> = raw_prog.split(",").collect();
 
 		// loop
 		while !self.interrupt {
-			let opcode = self.fetch(prog);
+			// fetch
+			let cur_opcode = prog[self.ip].parse::<u32>().expect("[!] ERROR: Could not parse next opcode");
 
+			match Opcode::from(cur_opcode) {
+				Opcode::Add => println!("Opcode: Add"),
+				Opcode::Multiply => println!("Opcode: Multiply"),
+				Opcode::Exit => println!("Opcode: Exit"),
+				_ => println!("Opcode: Unknown")
+			}
 		}
 
-		return 0;
-	}
-
-	fn fetch(&self, prog: Vec<&str>) -> u32 {
-		let opcode = prog[self.ip];
-
-		match opcode {
-			opcode if opcode == Opcode::Add as u32 => println!("Opcode: Add"),
-			opcode if opcode == Opcode::Mul as u32 => println!("Opcode: Multiply"),
-			opcode if opcode == Opcode::End as u32 => println!("Opcode: Exit"),
-			_ => println!("Opcode: Unknown")
-		}
-
-
-
-
-		println!("{:?}", prog[self.ip]);
 		return 0;
 	}
 
@@ -62,8 +51,19 @@ impl IntcodeCpu {
 
 // opcode enum
 enum Opcode {
+	Bad = 0,
 	Add = 1,
-	Mul = 2,
-	End = 99,
+	Multiply = 2,
+	Exit = 99,
 }
 
+impl From<u32> for Opcode {
+	fn from(opcode: u32) -> Self {
+		match opcode {
+			1 => Opcode::Add,
+			2 => Opcode::Multiply,
+			99 => Opcode::Exit,
+			_ => Opcode::Bad
+		}
+	}
+}
