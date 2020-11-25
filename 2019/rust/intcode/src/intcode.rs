@@ -5,6 +5,7 @@ use std::fmt;
 pub struct IntcodeCpu {
 	pub ip: usize,
 	pub interrupt: bool,
+	pub mem: Vec<u32>,
 }
 
 impl fmt::Display for IntcodeCpu {
@@ -14,36 +15,65 @@ impl fmt::Display for IntcodeCpu {
 }
 
 impl IntcodeCpu {
-	pub fn run(&mut self, raw_prog: String) -> u32 {
+	pub fn run(&mut self, program: String) -> u32 {
 		// display the raw program
-		println!("Program: {}", raw_prog);
+		println!("Program: {}", program);
 
 		// initialze the instruction pointer to zero
 		self.ip = 0;
 
 		// split out the program into parsable elements and convert to a vector
-		let prog: Vec<&str> = raw_prog.split(",").collect();
+		self.mem = program.split(",").map(|x| x.parse::<u32>().expect("[!] ERROR: could not convert to u32")).collect();
 
 		// loop
 		while !self.interrupt {
 			// fetch
-			let cur_opcode = prog[self.ip].parse::<u32>().expect("[!] ERROR: Could not parse next opcode");
+			let cur_opcode = self.mem[self.ip];
 
 			match Opcode::from(cur_opcode) {
-				Opcode::Add => println!("Opcode: Add"),
-				Opcode::Multiply => println!("Opcode: Multiply"),
-				Opcode::Exit => println!("Opcode: Exit"),
-				_ => println!("Opcode: Unknown")
+				Opcode::Add => self.exec_add(),
+				Opcode::Multiply => self.exec_multiply(),
+				Opcode::Exit => self.exec_exit(),
+				_ => self.exec_unknown(),
 			}
 		}
 
 		return 0;
 	}
 
-
-	fn exit(&self) {
-		println!("Exiting...\n TODO: still need to do cleanup code");
+	// Opcode Add
+	fn exec_add(&mut self) {
+		println!("Opcode: Add, Param: {}, Param: {}, Param: {}", self.mem[self.ip+1], self.mem[self.ip+2], self.mem[self.ip+3]);
+		self.ip += 4;
 	}
+
+	// Opcode Multiply
+	fn exec_multiply(&mut self) {
+		println!("Opcode: Multiply, Param: {}, Param: {}, Param: {}", self.mem[self.ip+1], self.mem[self.ip+2], self.mem[self.ip+3]);
+		self.ip += 4;
+	}
+
+	// Opcode Exit
+	fn exec_exit(&mut self) {
+		println!("Opcode: Exit");
+		self.shutdown(0);
+	}
+
+
+	// Opcode Unknown
+	fn exec_unknown(&mut self) {
+		println!("Opcode: Unknown");
+		self.shutdown(1);
+	}
+
+	// system shutdown
+	fn shutdown(&mut self, err: u32) {
+		println!("[!] Exiting with code {}", err);
+		self.interrupt = true;
+	}
+
+
+
 }
 
 
@@ -51,10 +81,10 @@ impl IntcodeCpu {
 
 // opcode enum
 enum Opcode {
-	Bad = 0,
-	Add = 1,
-	Multiply = 2,
-	Exit = 99,
+	Bad,
+	Add,
+	Multiply,
+	Exit,
 }
 
 impl From<u32> for Opcode {
