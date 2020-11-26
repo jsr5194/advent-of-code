@@ -43,19 +43,28 @@ impl IntcodeCpu {
 
 	// Opcode Add
 	fn exec_add(&mut self) {
-		println!("Opcode: Add, Param: {}, Param: {}, Param: {}", self.mem[self.ip+1], self.mem[self.ip+2], self.mem[self.ip+3]);
-		self.ip += 4;
+		let op1_idx = self.mem[self.ip+1] as usize;
+		let op2_idx = self.mem[self.ip+2] as usize;
+		let res_idx = self.mem[self.ip+3] as usize;
+
+		self.mem[res_idx] = self.mem[op1_idx] + self.mem[op2_idx];
+		self.inc_ip(4);
 	}
 
 	// Opcode Multiply
 	fn exec_multiply(&mut self) {
-		println!("Opcode: Multiply, Param: {}, Param: {}, Param: {}", self.mem[self.ip+1], self.mem[self.ip+2], self.mem[self.ip+3]);
-		self.ip += 4;
+		let op1_idx = self.mem[self.ip+1] as usize;
+		let op2_idx = self.mem[self.ip+2] as usize;
+		let res_idx = self.mem[self.ip+3] as usize;
+
+		self.mem[res_idx] = self.mem[op1_idx] * self.mem[op2_idx];
+		self.inc_ip(4);
 	}
 
 	// Opcode Exit
 	fn exec_exit(&mut self) {
 		println!("Opcode: Exit");
+		println!("Final Mem State: {:?}", self.mem);
 		self.shutdown(0);
 	}
 
@@ -64,6 +73,16 @@ impl IntcodeCpu {
 	fn exec_unknown(&mut self) {
 		println!("Opcode: Unknown");
 		self.shutdown(1);
+	}
+
+
+	// memory bounds checking
+	fn inc_ip(&mut self, value: usize) {
+		if self.ip + value < self.mem.len() {
+			self.ip += value;
+		} else {
+			panic!("[!] Invalid instruction pointer value");
+		}
 	}
 
 	// system shutdown
