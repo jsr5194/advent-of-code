@@ -16,6 +16,7 @@ fn main() {
 		for j in 1..contents.len() {
 			if contents[i] + contents[j] == 2020 {
 				result = contents[i] * contents[j];
+				break;
 			}
 		}
 	}
