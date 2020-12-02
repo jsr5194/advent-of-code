@@ -16,8 +16,8 @@ fn get_input() -> Vec<Password> {
 			Password {
 				passwd: passwd_group[1].clone(),
 				policy_char: full_policy[1].chars().next().expect("[!] ERROR: could not convert to char").clone(),
-				policy_range_lo: (policy_range[0].clone() - 1) as usize, // need to subtract one as its not zero indexed
-				policy_range_hi: (policy_range[1].clone() - 1) as usize, // need to subtract one as its not zero indexed
+				policy_range_lo: (policy_range[0].clone()) as usize,
+				policy_range_hi: (policy_range[1].clone()) as usize,
 			}
 		);
 	}
@@ -52,8 +52,8 @@ pub fn run_part2 () {
 	let mut valid_passwd_cnt = 0;
 
 	for password_group in password_db {
-		let first_loc = password_group.passwd.as_bytes()[password_group.policy_range_lo] as char;
-		let second_loc = password_group.passwd.as_bytes()[password_group.policy_range_hi] as char;
+		let first_loc = password_group.passwd.as_bytes()[password_group.policy_range_lo-1] as char; // -1 to account for a 1-index not 0-index
+		let second_loc = password_group.passwd.as_bytes()[password_group.policy_range_hi-1] as char; // -1 to account for a 1-index not 0-index
 
 		if (first_loc == password_group.policy_char) ^ (second_loc == password_group.policy_char) {
 			valid_passwd_cnt += 1;
