@@ -1,1 +1,1 @@
-/Users/jrittle_adm/src/advent-of-code/2020/aoc2020/target/debug/aoc2020: /Users/jrittle_adm/src/advent-of-code/2020/aoc2020/src/day1/mod.rs /Users/jrittle_adm/src/advent-of-code/2020/aoc2020/src/main.rs
+/Users/jrittle_adm/src/advent-of-code/2020/aoc2020/target/debug/aoc2020: /Users/jrittle_adm/src/advent-of-code/2020/aoc2020/src/day1/mod.rs /Users/jrittle_adm/src/advent-of-code/2020/aoc2020/src/day2/mod.rs /Users/jrittle_adm/src/advent-of-code/2020/aoc2020/src/main.rs
