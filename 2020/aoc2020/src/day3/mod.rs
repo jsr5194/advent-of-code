@@ -37,6 +37,7 @@ pub fn run_part1() {
 	let mut x = 0;
 	let mut y = 0;
 	let mut num_trees = 0;
+	let slope = Slope{x:3, y:1};
 	loop {
 		if y >= map.height {
 			break;
@@ -46,8 +47,8 @@ pub fn run_part1() {
 			num_trees += 1;
 		}
 
-		x += 3;
-		y += 1;
+		x += slope.x;
+		y += slope.y;
 	}
 
 	println!("Day 3 Part 1 Result: {}", num_trees);
