@@ -74,45 +74,46 @@ struct Credential {
 impl Credential {
 	fn is_complete_passport(&self) -> bool {
 		// bail if any of the required fields are empty
-		if self.byr == 0 {
-			return false;
-		} else if self.iyr == 0 {
-			return false;
-		} else if self.eyr == 0 {
-			return false;
-		} else if self.hgt == String::from("") {
-			return false;
-		} else if self.hcl == String::from("") {
-			return false;
-		} else if self.ecl == String::from("") {
-			return false;
-		} else if self.pid == String::from("") {
-			return false;
-		} 
-		true
+		if self.byr == u32::default() {
+			false
+		} else if self.iyr == u32::default() {
+			false
+		} else if self.eyr == u32::default() {
+			false
+		} else if self.hgt == String::default() {
+			false
+		} else if self.hcl == String::default() {
+			false
+		} else if self.ecl == String::default() {
+			false
+		} else if self.pid == String::default() {
+			false
+		} else {
+			true
+		}
 	}
 
 	fn is_valid_passport(&self) -> bool {
 		// ensure the passport is complete
 		if !self.is_complete_passport() {
-			return false
+			return false;
 		}
 
 		// do field-specific parsing
 
 		// byr (Birth Year) - four digits; at least 1920 and at most 2002.
 		if self.byr < 1920 || self.byr > 2002 {
-			return false
+			return false;
 		}
 
 		// iyr (Issue Year) - four digits; at least 2010 and at most 2020.
 		if self.iyr < 2010 || self.iyr > 2020 {
-			return false
+			return false;
 		}
 
 		// eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
 		if self.eyr < 2020 || self.eyr > 2030 {
-			return false
+			return false;
 		}
 
 		// hgt (Height) - a number followed by either cm or in:
@@ -122,24 +123,24 @@ impl Credential {
 		// If cm, the number must be at least 150 and at most 193.
 		if hgt_unit == "cm" {
 			if hgt_value < 150 || hgt_value > 193 {
-				return false
+				return false;
 			}
 		// If in, the number must be at least 59 and at most 76.
 		} else if hgt_unit == "in" {
 			if hgt_value < 59 || hgt_value > 76 {
-				return false
+				return false;
 			}
 		} else { 
-			return false
+			return false;
 		}
 		
 		// hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
 		if self.hcl.len() != 7 || &self.hcl[0..1] != "#" {
-			return false
+			return false;
 		} else {
 			for &byte in self.hcl[1..].as_bytes() {
 				if byte < 48 || (byte > 57 && byte < 97) || byte > 122 {
-					return false
+					return false;
 				}
 			}
 		}
@@ -147,12 +148,12 @@ impl Credential {
 		// ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
 		let ecl_list = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
 		if !ecl_list.contains(&self.ecl.as_str()){
-			return false
+			return false;
 		}
 		
 		// pid (Passport ID) - a nine-digit number, including leading zeroes.
 		if self.pid.len() != 9 || !self.pid.parse::<u64>().is_ok() {
-			return false
+			return false;
 		}
 		
 		// cid (Country ID) - ignored, missing or not.
