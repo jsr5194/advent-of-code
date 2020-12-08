@@ -32,7 +32,7 @@ pub fn run_part1() {
 	let key = "shiny gold";
 	for bag in bag_list {
 		if bag.key != key && bag.contains_key(key) {
-			//println!("{}", bag);
+			println!("{}\n\n", bag);
 			result += 1;
 		}
 	}
@@ -105,7 +105,6 @@ impl Bag {
 	}
 
 	fn contains_key(&self, key: &str) -> bool {
-		println!("wtf");
 		if self.key == key {
 			return true;
 		} else {

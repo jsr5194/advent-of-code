@@ -25,8 +25,8 @@ impl Handheld {
 			} else {
 				match self.mem[self.ip] {
 					Instruction::ACC{executed: _, value} => {
-						self.r0 = self.r0.wrapping_add(value as u32);
 						self.mem[self.ip].set_executed();
+						self.r0 = self.r0.wrapping_add(value as u32);
 						self.inc_ip();
 					},
 					Instruction::JMP{executed: _, value} => {
