@@ -48,5 +48,4 @@ fn run_day(day_num: u32) {
 
 fn main() {
     run_day(7);
-    println!("[!]\n[!] Day 7 still unfinished\n[!]");
 }

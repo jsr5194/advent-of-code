@@ -32,20 +32,20 @@ fn read_input() -> HashMap<String, Vec<Contents>> {
 }
 
 pub fn run_part1() {
-//	let bag_collection = read_input();
-//	let target_bag = String::from("shiny gold");
-//
-//	let mut count = 0;
-//	for key in bag_collection.keys(){
-//		for idx in 0..bag_collection[key].len(){
-//			if contains_target_bag(&target_bag, bag_collection[key][idx].clone(), bag_collection.clone()) {
-//				count += 1;
-//				break;
-//			}
-//		}
-//	}
-//
-	println!("Day 7 Part 1 Result: Uncomment if you really want to run it");
+	let bag_collection = read_input();
+	let target_bag = String::from("shiny gold");
+
+	let mut count = 0;
+	for key in bag_collection.keys(){
+		for idx in 0..bag_collection[key].len(){
+			if contains_target_bag(&target_bag, &bag_collection[key][idx], &bag_collection) {
+				count += 1;
+				break;
+			}
+		}
+	}
+
+	println!("Day 7 Part 1 Result: {}", count);
 }
 
 pub fn run_part2() {
@@ -54,26 +54,26 @@ pub fn run_part2() {
 	
 	let mut num_bags = 0;
 	for content in target_bag {
-		num_bags += get_total_bag_count(content.clone(), bag_collection.clone());
+		num_bags += get_total_bag_count(&content, &bag_collection);
 	}
 
 	println!("Day 7 Part 2 Result: {}", num_bags);
 }
 
-fn contains_target_bag(target_bag: &String, content: Contents, bag_collection: HashMap<String, Vec<Contents>>) -> bool {
+fn contains_target_bag(target_bag: &String, content: &Contents, bag_collection: &HashMap<String, Vec<Contents>>) -> bool {
 	if content.bag_type == *target_bag {
 		return true;
 	} 
 
 	for sub_collection in bag_collection.get(&content.bag_type).expect("Could not find bag type") {
-		if contains_target_bag(target_bag, sub_collection.clone(), bag_collection.clone()) {
+		if contains_target_bag(target_bag, sub_collection, bag_collection) {
 			return true;
 		}
 	}
 	false
 }
 
-fn get_total_bag_count(bag: Contents, bag_collection: HashMap<String, Vec<Contents>>) -> u32 {
+fn get_total_bag_count(bag: &Contents, bag_collection: &HashMap<String, Vec<Contents>>) -> u32 {
 	let mut num_bags = 0;
 	let bag_contents = bag_collection.get(&bag.bag_type).expect("Could not find bag type");
 	
@@ -81,7 +81,7 @@ fn get_total_bag_count(bag: Contents, bag_collection: HashMap<String, Vec<Conten
 
 	if bag_contents.len() > 0 {
 		for sub_content in bag_contents  {
-			num_bags = num_bags + (bag.count * get_total_bag_count(sub_content.clone(), bag_collection.clone()));
+			num_bags = num_bags + (bag.count * get_total_bag_count(&sub_content, &bag_collection));
 		}
 	}
 
