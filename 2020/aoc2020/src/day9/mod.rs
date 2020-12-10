@@ -1,6 +1,6 @@
 use std::fs;
 
-const PREAMBLE_SIZE_TEST: usize = 5;
+//const PREAMBLE_SIZE_TEST: usize = 5;
 const PREAMBLE_SIZE_PRODUCTION: usize = 25;
 
 fn get_input() -> XMAS {
@@ -16,13 +16,13 @@ fn get_input() -> XMAS {
 }
 
 pub fn run_part1() {
-	let mut data = get_input();
+	let data = get_input();
 
 	println!("Day 9 Part 1 Result: {:?}", data.find_invalid_pair());
 }
 
 pub fn run_part2() {
-	let mut data = get_input();
+	let data = get_input();
 
 	let mut result = data.find_encryption_weakness();
 	result.sort();
@@ -45,7 +45,7 @@ impl XMAS {
 
 	fn find_invalid_pair(&self) -> usize {
 		let mut cur_idx: usize = self.preamble_size;
-		let mut cur_idx_valid = false;
+		let mut cur_idx_valid;
 
 		// loop over each value of the XMAS data excluding the preamble
 		for _ in self.preamble_size..self.data.len() {
