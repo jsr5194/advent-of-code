@@ -122,8 +122,6 @@ impl AdapterChain {
 		let mut dynamic_subsets: Vec<Vec<usize>> = vec![];
 		dynamic_subsets.push([].to_vec());
 
-
-
 		// categorize each of the adapters
 		for adapter in &self.adapters {
 			if permanent_adapters.contains(adapter) {
@@ -166,10 +164,7 @@ impl AdapterChain {
 
 		}
 
-
 		running_total
-
-
 	}
 
 	fn solve_range(&self) -> usize {
