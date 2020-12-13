@@ -10,6 +10,7 @@ mod day8;
 mod day9;
 mod day10;
 mod day11;
+mod day12;
 
 fn run_day(day_num: u32) {
 	match day_num {
@@ -57,10 +58,14 @@ fn run_day(day_num: u32) {
 			day11::run_part1();
 			day11::run_part2();
 		}
+		12 => {
+			day12::run_part1();
+			day12::run_part2();
+		}
 		_ => panic!("[!] ERROR: invalid day picked")
 	}
 }
 
 fn main() {
-    run_day(11);
+    run_day(12);
 }

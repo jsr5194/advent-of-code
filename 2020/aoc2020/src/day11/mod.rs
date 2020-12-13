@@ -108,79 +108,79 @@ impl Map {
 		self.grid.get_mut(&key).unwrap().cell_type = value;
 	}
 
-	fn peek_in_direction(&mut self, map_snapshot: &Map, cell: &Cell, location: Location) -> usize {
+	fn peek_in_direction(&mut self, map_snapshot: &Map, x: usize, y:usize, location: Location) -> usize {
 		let mut peek_x: usize = 0;
 		let mut peek_y: usize = 0;
 		let mut border_hit: bool = false;
 		match location {
 			Location::TopLeft => {
 				// Top Left
-				if !cell.x.overflowing_sub(1).1 && !cell.y.overflowing_sub(1).1 {
-					peek_x = cell.x-1;
-					peek_y = cell.y-1;
+				if !x.overflowing_sub(1).1 && !y.overflowing_sub(1).1 {
+					peek_x = x-1;
+					peek_y = y-1;
 				} else {
 					border_hit = true;
 				}
 			},
 			Location::TopCenter => {
 				// Top Center
-				if !cell.y.overflowing_sub(1).1 {
-					peek_x = cell.x;
-					peek_y = cell.y-1;
+				if !y.overflowing_sub(1).1 {
+					peek_x = x;
+					peek_y = y-1;
 				} else {
 					border_hit = true;
 				}
 			},
 			Location::TopRight => {
 				// Top Right
-				if cell.x+1 < map_snapshot.width && !cell.y.overflowing_sub(1).1 {
-					peek_x = cell.x+1;
-					peek_y = cell.y-1;
+				if x+1 < map_snapshot.width && !y.overflowing_sub(1).1 {
+					peek_x = x+1;
+					peek_y = y-1;
 				} else {
 					border_hit = true;
 				}
 			},
 			Location::CenterLeft => {
 				// Center Left
-				if !cell.x.overflowing_sub(1).1 {
-					peek_x = cell.x-1;
-					peek_y = cell.y;
+				if !x.overflowing_sub(1).1 {
+					peek_x = x-1;
+					peek_y = y;
 				} else {
 					border_hit = true;
 				}
 			},
 			Location::CenterRight => {
 				// Center Right
-				if cell.x+1 < map_snapshot.width {
-					peek_x = cell.x+1;
-					peek_y = cell.y;
+				if x+1 < map_snapshot.width {
+					peek_x = x+1;
+					peek_y = y;
 				} else {
 					border_hit = true;
 				}
 			},
 			Location::BottomLeft => {
 				// Bottom Left
-				if !cell.x.overflowing_sub(1).1 && cell.y+1 < map_snapshot.height {
-					peek_x = cell.x-1;
-					peek_y = cell.y+1;
+				if !x.overflowing_sub(1).1 && y+1 < map_snapshot.height {
+					peek_x = x-1;
+					peek_y = y+1;
 				} else {
 					border_hit = true;
 				}
 			},
 			Location::BottomCenter => {
 				// Bottom Center
-				if cell.y+1 < map_snapshot.height {
-					peek_x = cell.x;
-					peek_y = cell.y+1;
+				if y+1 < map_snapshot.height {
+					peek_x = x;
+					peek_y = y+1;
 				} else {
 					border_hit = true;
 				}
 			},
 			Location::BottomRight => {
 				// Bottom Right
-				if cell.x+1 < map_snapshot.width && cell.y+1 < map_snapshot.height {
-					peek_x = cell.x+1;
-					peek_y = cell.y+1;
+				if x+1 < map_snapshot.width && y+1 < map_snapshot.height {
+					peek_x = x+1;
+					peek_y = y+1;
 				} else {
 					border_hit = true;
 				}
@@ -195,8 +195,7 @@ impl Map {
 				},
 				CellType::Floor    => {
 					if !self.only_adjacent {
-						let peek_cell = Cell{x: peek_x, y: peek_y, cell_type: cell.cell_type.clone()};
-						occupied_count = self.peek_in_direction(map_snapshot, &peek_cell, location);
+						occupied_count = self.peek_in_direction(map_snapshot, peek_x, peek_y, location);
 					}
 				},
 				CellType::Empty => (),
@@ -210,14 +209,14 @@ impl Map {
 		let mut occupied_count = 0;
 
 		// check 
-		occupied_count += self.peek_in_direction(map_snapshot, cell, Location::TopLeft);
-		occupied_count += self.peek_in_direction(map_snapshot, cell, Location::TopCenter);
-		occupied_count += self.peek_in_direction(map_snapshot, cell, Location::TopRight);
-		occupied_count += self.peek_in_direction(map_snapshot, cell, Location::CenterLeft);
-		occupied_count += self.peek_in_direction(map_snapshot, cell, Location::CenterRight);
-		occupied_count += self.peek_in_direction(map_snapshot, cell, Location::BottomLeft);
-		occupied_count += self.peek_in_direction(map_snapshot, cell, Location::BottomCenter);
-		occupied_count += self.peek_in_direction(map_snapshot, cell, Location::BottomRight);
+		occupied_count += self.peek_in_direction(map_snapshot, cell.x, cell.y, Location::TopLeft);
+		occupied_count += self.peek_in_direction(map_snapshot, cell.x, cell.y, Location::TopCenter);
+		occupied_count += self.peek_in_direction(map_snapshot, cell.x, cell.y, Location::TopRight);
+		occupied_count += self.peek_in_direction(map_snapshot, cell.x, cell.y, Location::CenterLeft);
+		occupied_count += self.peek_in_direction(map_snapshot, cell.x, cell.y, Location::CenterRight);
+		occupied_count += self.peek_in_direction(map_snapshot, cell.x, cell.y, Location::BottomLeft);
+		occupied_count += self.peek_in_direction(map_snapshot, cell.x, cell.y, Location::BottomCenter);
+		occupied_count += self.peek_in_direction(map_snapshot, cell.x, cell.y, Location::BottomRight);
 
 
 		// If a seat is empty (L) and there are no occupied seats adjacent to it, the seat becomes occupied.
