@@ -28,7 +28,7 @@ impl NavCpu {
 					self.waypoint.rotate_heading(&instr)
 				},
 				Direction::Forward => {
-					for round in 0..instr.value {
+					for _ in 0..instr.value {
 						// handle longitude direction
 						self.ship.go_direction(&Instruction {
 							action: self.waypoint.longitude.direction.clone(),
