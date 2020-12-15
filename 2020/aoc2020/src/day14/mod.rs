@@ -2,7 +2,7 @@ use std::fmt;
 use std::fs;
 
 fn get_input() -> BitmaskCpu {
-	let filename = "./src/day14/test_input.txt";
+	let filename = "./src/day14/input.txt";
 	let contents = fs::read_to_string(filename).unwrap();
 	let mut cpu = BitmaskCpu::default();
 	for line in contents.lines() {
@@ -33,7 +33,7 @@ struct BitmaskCpu {
 	program: Vec<Instruction>,
 	memory: Vec<Byte>,
 	or_mask: usize,
-	xor_mask: usize,
+	and_mask: usize,
 }
 
 impl Default for BitmaskCpu {
@@ -42,7 +42,7 @@ impl Default for BitmaskCpu {
 			program: vec![],
 			memory: vec![Byte::default(); 0xFFFF],
 			or_mask: 0,
-			xor_mask: 0,
+			and_mask: 0,
 		}
 	}
 }
@@ -68,17 +68,18 @@ impl BitmaskCpu {
 	fn run(&mut self) {
 		for instr in &self.program {
 			match instr {
-				Instruction::Mask {or_mask, xor_mask} => {
+				Instruction::Mask {or_mask, and_mask} => {
 					self.or_mask = *or_mask;
-					self.xor_mask = *xor_mask;
+					self.and_mask = *and_mask;
 				},
 				Instruction::Mem {addr, value} => {
 					let mut new_value = value | self.or_mask;
-					if new_value & self.xor_mask > 0 {
-						new_value = new_value ^ self.xor_mask;
-					}
+					new_value = new_value & !self.and_mask;
+//					if new_value & self.and_mask > 0 {
+//						new_value = new_value & self.and_mask;
+//					}
 					println!("OR Mask:  {:?}", self.or_mask);
-					println!("XOR Mask: {:?}", self.xor_mask);
+					println!("XOR Mask: {:?}", self.and_mask);
 					println!("Instr:    {:?}", instr);
 					println!("Before Mem: {:?}", self.memory.get(*addr).unwrap().value);
 					self.memory.get_mut(*addr).unwrap().value = new_value;
@@ -91,7 +92,7 @@ impl BitmaskCpu {
 
 #[derive(Debug, Clone, PartialEq)]
 enum Instruction {
-	Mask {or_mask: usize, xor_mask: usize},
+	Mask {or_mask: usize, and_mask: usize},
 	Mem {addr: usize, value: usize},
 }
 
@@ -100,27 +101,27 @@ impl From<&str> for Instruction {
 		let split_instr: Vec<String> = instr_line.split(" = ").map(|x| x.to_string()).collect();
 		if instr_line.contains("mask") { 
 			let mut or_mask_str = String::default();
-			let mut xor_mask_str = String::default();
+			let mut and_mask_str = String::default();
 			for c in split_instr[1].chars() {
 				if c == 'X' {
 					or_mask_str.push('0');
-					xor_mask_str.push('0');
+					and_mask_str.push('0');
 				} else {
 					if c == '0' {
-						xor_mask_str.push('1');
+						and_mask_str.push('1');
 					} else {
-						xor_mask_str.push('0');
+						and_mask_str.push('0');
 					}
 					or_mask_str.push(c);
 				}
 			}
 			
 			let or_mask = usize::from_str_radix(&or_mask_str, 2).unwrap();
-			let xor_mask = usize::from_str_radix(&xor_mask_str, 2).unwrap();
+			let and_mask = usize::from_str_radix(&and_mask_str, 2).unwrap();
 
 			Instruction::Mask{
 				or_mask: or_mask.clone(),
-				xor_mask: xor_mask.clone(),
+				and_mask: and_mask.clone(),
 			}
 		} else {
 			Instruction::Mem{
