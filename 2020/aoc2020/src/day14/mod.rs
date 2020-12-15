@@ -1,7 +1,8 @@
+use std::fmt;
 use std::fs;
 
 fn get_input() -> BitmaskCpu {
-	let filename = "./src/day14/input.txt";
+	let filename = "./src/day14/test_input.txt";
 	let contents = fs::read_to_string(filename).unwrap();
 	let mut cpu = BitmaskCpu::default();
 	for line in contents.lines() {
@@ -16,7 +17,7 @@ pub fn run_part1() {
 	cpu.run();
 
 	let mut result = 0;
-	for byte in cpu.memory {
+	for byte in &cpu.memory {
 		result += byte.value;
 	}
 
@@ -39,17 +40,33 @@ impl Default for BitmaskCpu {
 	fn default() -> Self {
 		BitmaskCpu {
 			program: vec![],
-			memory: vec![Byte::default(); 127000],
+			memory: vec![Byte::default(); 0xFFFF],
 			or_mask: 0,
 			xor_mask: 0,
 		}
 	}
 }
 
+impl fmt::Display for BitmaskCpu {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let mut output = String::default();
+		for idx in 0..self.memory.len() {
+			if idx % 16 == 0 {
+				output += "\n";
+			}
+			if self.memory[idx].value == 0 {
+				output += " ..........";
+			} else {
+				output += format!(" {:010X}", self.memory[idx].value).as_str();
+			}
+		}
+		write!(f, "{}", output)
+	}
+}
+
 impl BitmaskCpu {
 	fn run(&mut self) {
 		for instr in &self.program {
-
 			match instr {
 				Instruction::Mask {or_mask, xor_mask} => {
 					self.or_mask = *or_mask;
@@ -57,10 +74,15 @@ impl BitmaskCpu {
 				},
 				Instruction::Mem {addr, value} => {
 					let mut new_value = value | self.or_mask;
-					if new_value & self.xor_mask != 0 {
+					if new_value & self.xor_mask > 0 {
 						new_value = new_value ^ self.xor_mask;
 					}
+					println!("OR Mask:  {:?}", self.or_mask);
+					println!("XOR Mask: {:?}", self.xor_mask);
+					println!("Instr:    {:?}", instr);
+					println!("Before Mem: {:?}", self.memory.get(*addr).unwrap().value);
 					self.memory.get_mut(*addr).unwrap().value = new_value;
+					println!("After Mem: {:?}\n", self.memory.get(*addr).unwrap().value);
 				},
 			};
 		}
@@ -98,7 +120,7 @@ impl From<&str> for Instruction {
 
 			Instruction::Mask{
 				or_mask: or_mask.clone(),
-				xor_mask: xor_mask,
+				xor_mask: xor_mask.clone(),
 			}
 		} else {
 			Instruction::Mem{

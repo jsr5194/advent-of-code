@@ -1,7 +1,7 @@
 use std::fs;
 
 fn get_input() -> Schedule {
-	let filename = "./src/day13/input.txt";
+	let filename = "./src/day13/test_input.txt";
 	let contents = fs::read_to_string(filename).unwrap();
 	let contents_lines: Vec<String> = contents.lines().map(|x| x.to_string()).collect();
 	let mut sched = Schedule::default();
@@ -37,6 +37,15 @@ pub fn run_part1() {
 }
 
 pub fn run_part2() {
+	let sched = get_input();
+
+	let mut N = 1;
+	for idx in 0..sched.busses.len() {
+		if sched.busses[idx].id != 0 {
+			N *= sched.busses[idx].id;
+		}
+	}
+
 
 }
 
@@ -56,3 +65,48 @@ impl Bus {
 		earliest_departure + self.id - (earliest_departure % self.id)
 	}
 }
+
+//#[derive(Debug, Default, Clone, PartialEq)]
+//struct ExtEuclid {
+//	a: usize,
+//	b: usize,
+//	gcd: usize,
+//	s: usize,
+//	t: usize,
+//}
+//
+//impl ExtEuclid {
+//	fn solve(&mut self) {
+//		let mut r0: usize = self.a;
+//		let mut r1: usize = self.b;
+//		let mut s0: usize = 1;
+//		let mut s1: usize = 0;
+//		let mut t0: usize = 0;
+//		let mut t1: usize = 1;
+//
+//		loop {
+//			let q = r0 / r1;
+//			let r2 = r0 - q * r1;
+//
+//			if r2 == 0 {
+//				break;
+//			}
+//
+//			let s2 = s0 - q * s1;
+//			let t2 = t0 - q * t1;
+//
+//			// set up for next round
+//			r0 = r1;
+//			r1 = r2;
+//			s0 = s1;
+//			s1 = s2;
+//			t0 = t1;
+//			t1 = t2;
+//
+//			// save off results
+//			self.gcd = r2;
+//			self.s = s2;
+//			self.t = t2;
+//		}
+//	}
+//}
