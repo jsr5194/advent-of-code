@@ -51,7 +51,7 @@ impl Game {
 			let mut spoken_number: usize = 0;
 
 			// determine if last number has been said
-			let mut last_number_already_said: bool;
+			let last_number_already_said: bool;
 			if self.numbers.contains_key(&self.last_number) {
 				last_number_already_said = true;
 			} else {
@@ -59,7 +59,7 @@ impl Game {
 			}
 
 			// determine if the last number has only been said once
-			let mut last_number_said_once: bool;
+			let last_number_said_once: bool;
 			if self.numbers.get(&self.last_number).unwrap().ages.len() == 1 {
 				last_number_said_once = true;
 			} else {

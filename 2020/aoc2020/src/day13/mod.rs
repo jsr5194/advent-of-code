@@ -37,15 +37,16 @@ pub fn run_part1() {
 }
 
 pub fn run_part2() {
-	let sched = get_input();
+//	let sched = get_input();
 
-	let mut N = 1;
-	for idx in 0..sched.busses.len() {
-		if sched.busses[idx].id != 0 {
-			N *= sched.busses[idx].id;
-		}
-	}
+//	let mut N = 1;
+//	for idx in 0..sched.busses.len() {
+//		if sched.busses[idx].id != 0 {
+//			N *= sched.busses[idx].id;
+//		}
+//	}
 
+	println!("Day 13 Part 2: TODO");
 
 }
 

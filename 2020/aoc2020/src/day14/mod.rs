@@ -1,5 +1,4 @@
 use std:: collections::HashMap;
-use std::fmt;
 use std::fs;
 
 fn get_v1_input() -> BitmaskCpuV1 {
@@ -16,7 +15,7 @@ fn get_v1_input() -> BitmaskCpuV1 {
 fn get_v2_input() -> BitmaskCpuV2 {
 	let filename = "./src/day14/test_input.txt";
 	let contents = fs::read_to_string(filename).unwrap();
-	println!("contents: {:?}", contents);
+	//println!("contents: {:?}", contents);
 	let mut cpu = BitmaskCpuV2::default();
 	for line in contents.lines() {
 		cpu.program.push(V2Instruction::from(line));
@@ -41,12 +40,14 @@ pub fn run_part2() {
 	let mut cpu = get_v2_input();
 	cpu.run();
 
-	let mut result = 0;
-	for key in cpu.memory.keys() {
-		result += cpu.memory[key].value;
-	}
+//	println!("{:?}", cpu.masks);
+//
+//	let mut result = 0;
+//	for key in cpu.memory.keys() {
+//		result += cpu.memory[key].value;
+//	}
 
-	println!("Day 14 Part 2: STILL NEED TO FINISH");
+	println!("Day 14 Part 2: TODO");
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -115,13 +116,22 @@ impl BitmaskCpuV2 {
 					self.masks = masks.clone();
 				},
 				V2Instruction::Mem {addr, value} => {
-					let mut new_addr = addr.clone();
 
 					for mask in &self.masks {
+						let mut new_addr = addr.clone();
 						match mask.operation {
 							Operation::OR  => {
 								new_addr = new_addr | mask.mask;
-								//println!("New Addr: {:?}", new_addr);
+								//println!("Addr:         {:038b}\nMask:      {:?} {:038b}\nNew Addr:     {:038b} {}", addr, mask.operation, mask.mask, new_addr, new_addr);
+								if self.memory.contains_key(&new_addr) {
+									self.memory.get_mut(&new_addr).unwrap().value = *value;
+								} else {
+									self.memory.insert(new_addr, Byte{value: *value});
+								}
+							},
+							Operation::NAND  => {
+								new_addr = new_addr & !mask.mask;
+								//println!("Addr:         {:038b}\nMask:     {:?} {:038b}\nNew Addr:     {:038b} {}", addr, mask.operation, mask.mask, new_addr, new_addr);
 								if self.memory.contains_key(&new_addr) {
 									self.memory.get_mut(&new_addr).unwrap().value = *value;
 								} else {
@@ -130,7 +140,9 @@ impl BitmaskCpuV2 {
 							},
 							_ => panic!("Invalid mask operation"),
 						}
+						//println!("\n");
 					}
+					//println!("\n\n\n");
 				},
 			};
 		}
@@ -197,29 +209,30 @@ impl From<&str> for V2Instruction {
 	fn from(instr_line: &str) -> Self {
 		let split_instr: Vec<String> = instr_line.split(" = ").map(|x| x.to_string()).collect();
 		if instr_line.contains("mask") { 
-			let mut new_masks: Vec<String> = vec![];
-			new_masks.push(String::default());
+			let mut new_masks: Vec<RawMask> = vec![];
+			new_masks.push(RawMask{mask: String::default(), operation: Operation::OR});
 			for c in split_instr[1].chars() {
 				match c {
 					'0' => {
-						for new_mask in &mut new_masks {
-							*new_mask += "0";
+						for idx in 0..new_masks.len() {
+							new_masks[idx].mask += "0";
 						}
 					},
 					'1' => {
-						for new_mask in &mut new_masks {
-							*new_mask += "1";
+						for idx in 0..new_masks.len() {
+							new_masks[idx].mask += "1";
 						}
 					},
 					'X' => {
-						let mut dup_new_mask = String::default();
-						for new_mask in &mut new_masks {
-							*new_mask += "0";
+						for idx in 0..new_masks.len() {
+							let mut dup_new_mask = RawMask{mask: String::default(), operation: Operation::NAND};
 
-							dup_new_mask = new_mask.clone();
-							dup_new_mask += "1";
+							dup_new_mask.mask += "1";
+							new_masks.push(dup_new_mask.clone());
+
+							new_masks[idx].mask += "1";
+							new_masks[idx].operation = Operation::OR;
 						}
-						new_masks.push(dup_new_mask);
 					},
 					_ => panic!("invalid mask character"),
 				}
@@ -227,12 +240,8 @@ impl From<&str> for V2Instruction {
 
 			let mut masks: Vec<Mask> = vec![];
 			for mask in new_masks {
-				masks.push(Mask{operation: Operation::OR, mask: usize::from_str_radix(&mask, 2).unwrap()});
+				masks.push(Mask{mask: usize::from_str_radix(&mask.mask, 2).unwrap(), operation: mask.operation});
 			}
-
-//			for mask in &masks {
-//				println!("Mask: {:#036b}", mask.mask);
-//			}
 
 			V2Instruction::Mask{
 				masks: masks.clone(),
@@ -261,12 +270,18 @@ struct Mask {
 	mask: usize,
 }
 
+#[derive(Debug, Default, Clone, PartialEq)]
+struct RawMask {
+	operation: Operation,
+	mask: String,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 enum Operation {
 	OR,
-	AND,
+//	AND,
 	NAND,
-	XOR,
+//	XOR,
 	NONE,
 }
 
@@ -280,3 +295,5 @@ impl Default for Operation {
 struct Byte {
 	value: usize,
 }
+
+
