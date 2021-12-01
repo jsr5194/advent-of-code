@@ -9,10 +9,53 @@ fn get_input() -> Vec<u32> {
 
 /// run Day 1 Part 1
 pub fn run_part_1() {
-	println!("[*] Day 1 Part 1 Result: TODO");
+	let report = get_input();
+
+	let mut increases: u32 = 0;
+	let mut last_value: u32 = 0;
+	let mut first_run: bool = true;
+	for entry in report {
+		if !first_run {
+			if entry > last_value {
+				increases += 1;
+			}
+		} else {
+			first_run = false;
+		}
+		last_value = entry;
+	}
+
+	println!("[*] Day 1 Part 1 Result: {}", increases)
 }
 
 /// run Day 1 Part 2
 pub fn run_part_2() {
-	println!("[*] Day 1 Part 2 Result: TODO");
+	let report = get_input();
+
+	let mut increases: u32 = 0;
+	let mut last_value: u32 = 0;
+	let mut v0: u32 = 0;
+	let mut v1: u32 = 0;
+	let mut v2: u32 = 0;
+	let mut run: u32 = 0;
+	for entry in report {
+		if run > 2 {
+			let cur_value: u32 = v0 + v1 + v2;
+			if cur_value > last_value {
+				increases += 1;
+			}
+			last_value = cur_value;
+			v0 = v1;
+			v1 = v2;
+			v2 = entry;
+		} else if run == 0 {
+			v0 = entry;
+		} else if run == 1 {
+			v1 = entry;
+		} else if run == 2 {
+			v2 = entry;
+		}
+		run += 1;
+	}
+	println!("[*] Day 1 Part 2 Result: {}", increases)
 }
