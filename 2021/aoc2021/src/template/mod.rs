@@ -1,7 +1,7 @@
 use std::fs;
 
 fn get_input() -> Vec<u32> {
-	let filename = "./src/dayX/input.txt";
+	let filename = "./src/dayX/input_test.txt";
 	let contents_str = fs::read_to_string(filename).expect("[!] ERROR: an error occurred while reading the file");
 	let contents: Vec<u32> = contents_str.lines().map(|x| x.parse::<u32>().expect("[!] ERROR: could not convert to u32")).collect();
 	contents

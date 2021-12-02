@@ -1,6 +1,6 @@
 mod lib;
 mod day1;
-//mod day2;
+mod day2;
 //mod day3;
 //mod day4;
 //mod day5;
@@ -31,10 +31,10 @@ fn run_day(day_num: usize) {
 			day1::run_part_1();
 			day1::run_part_2();
 		},
-//		2 => {
-//			day2::run_part_1();
-//			day2::run_part_2();
-//		},
+		2 => {
+			day2::run_part_1();
+			day2::run_part_2();
+		},
 //		3 => {
 //			day3::run_part_1();
 //			day3::run_part_2();
@@ -132,5 +132,5 @@ fn run_day(day_num: usize) {
 }
 
 fn main() {
-	run_day(1);
+	run_day(2);
 }
