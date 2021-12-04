@@ -10,14 +10,14 @@ fn run_day(day_num: usize) {
 			aoc::day2::run_part_1();
 			aoc::day2::run_part_2();
 		},
-//		3 => {
-//			aoc::day3::run_part_1();
-//			aoc::day3::run_part_2();
-//		},
-//		4 => {
-//			aoc::day4::run_part_1();
-//			aoc::day4::run_part_2();
-//		},
+		3 => {
+			aoc::day3::run_part_1();
+			aoc::day3::run_part_2();
+		},
+		4 => {
+			aoc::day4::run_part_1();
+			aoc::day4::run_part_2();
+		},
 //		5 => {
 //			aoc::day5::run_part_1();
 //			aoc::day5::run_part_2();
@@ -107,5 +107,6 @@ fn run_day(day_num: usize) {
 }
 
 fn main() {
-	run_day(2);
+	// run_day(3);
+	run_day(4);
 }
