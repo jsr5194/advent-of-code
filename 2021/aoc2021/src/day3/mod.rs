@@ -51,7 +51,7 @@ pub fn run_part_1() {
 pub fn run_part_2() {
 	// define results
 	let mut o2: u32 = 0;
-	let mut co2: u32 = 0;
+	let co2: u32 = 0;
 
 	// set max check depth
 	let max_depth: u32 = 5;

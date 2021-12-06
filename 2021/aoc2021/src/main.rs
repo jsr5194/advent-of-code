@@ -18,10 +18,10 @@ fn run_day(day_num: usize) {
 			aoc::day4::run_part_1();
 			aoc::day4::run_part_2();
 		},
-//		5 => {
-//			aoc::day5::run_part_1();
-//			aoc::day5::run_part_2();
-//		},
+		5 => {
+			aoc::day5::run_part_1();
+			aoc::day5::run_part_2();
+		},
 //		6 => {
 //			aoc::day6::run_part_1();
 //			aoc::day6::run_part_2();
@@ -108,5 +108,5 @@ fn run_day(day_num: usize) {
 
 fn main() {
 	// run_day(3);
-	run_day(4);
+	run_day(5);
 }
