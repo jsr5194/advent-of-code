@@ -1,4 +1,3 @@
-use std::fmt;
 use std::fs;
 
 fn get_input() -> School {

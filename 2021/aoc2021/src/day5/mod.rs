@@ -1,4 +1,3 @@
-//use std::fmt;
 use std::fs;
 
 fn get_part1_input() -> Part1Map {
@@ -17,7 +16,7 @@ fn get_part2_input() -> Part2Map {
 
 /// run Day 5 Part 1
 pub fn run_part_1() {
-//	let map = get_part1_input();
+	let _map = get_part1_input();
 //	let mut overlaps: u32 = 0;
 //	for coord in map.coords { 
 //		if coord.vent_count > 1 {

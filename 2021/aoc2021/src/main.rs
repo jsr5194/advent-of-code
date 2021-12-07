@@ -107,6 +107,5 @@ fn run_day(day_num: usize) {
 }
 
 fn main() {
-	// run_day(3);
-	run_day(6);
+	run_day(3);
 }
