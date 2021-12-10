@@ -36,6 +36,11 @@ pub fn run_part_1() {
 
 /// run Day 8 Part 2
 pub fn run_part_2() {
+	let mut notes: Notes = get_input();
+	let mut result = 0;
+	for entry in &mut notes.entries {
+		entry.decode();
+	}
 	println!("[*] Day 8 Part 2 Result: TODO");
 }
 
@@ -53,31 +58,35 @@ struct SevenSegmentDisplay {
 }
 
 impl SevenSegmentDisplay {
-	fn get_lit_segment_count(&self) -> u32 {
-		let mut lit_segment_count: u32 = 0;
+	fn get_lit_segments(&self) -> Vec<char> {
+		let mut lit_segments: Vec<char> = vec![];
 		if self.a {
-			lit_segment_count += 1;
+			lit_segments.push('a');
 		}
 		if self.b {
-			lit_segment_count += 1;
+			lit_segments.push('b');
 		}
 		if self.c {
-			lit_segment_count += 1;
+			lit_segments.push('c');
 		}
 		if self.d {
-			lit_segment_count += 1;
+			lit_segments.push('d');
 		}
 		if self.e {
-			lit_segment_count += 1;
+			lit_segments.push('e');
 		}
 		if self.f {
-			lit_segment_count += 1;
+			lit_segments.push('f');
 		}
 		if self.g {
-			lit_segment_count += 1;
+			lit_segments.push('g');
 		}
 
-		lit_segment_count
+		lit_segments
+	}
+
+	fn get_lit_segment_count(&self) -> usize {
+		self.get_lit_segments().len()
 	}
 
 	fn set_to(&mut self, value: u32) {
@@ -260,8 +269,297 @@ struct Signals {
 }
 
 impl Signals {
-	fn decode (&mut self) {
+	fn get_pattern(&self, pattern: u32) -> SevenSegmentDisplay {
+		for segment in &self.patterns {
+			if segment.decoded {
+				if segment.get_value() == pattern {
+					return segment.clone()
+				}
+			} else {
+				match pattern {
+					1 => {
+						if segment.get_lit_segment_count() == 2 {
+							return segment.clone()
+						}
+					},
+					4 => {
+						if segment.get_lit_segment_count() == 4 {
+							return segment.clone()
+						}
+					},
+					7 => {
+						if segment.get_lit_segment_count() == 3 {
+							return segment.clone()
+						}
+					},
+					8 => {
+						if segment.get_lit_segment_count() == 7 {
+							return segment.clone()
+						}
+					},
+					_ => {},
+				}
+			}
+		}
+		panic!("segment not found");
+	}
 
+	fn decode (&mut self) {
+		let mut verticals: Vec<char> = vec![];
+		let mut horizontals: Vec<char> = vec![];
+
+		let one = self.get_pattern(1);
+		let seven = self.get_pattern(7);
+
+		// a: the odd segment out between 1 and 7 will give you a
+		for segment in seven.get_lit_segments() {
+			if one.get_lit_segments().contains(&segment) {
+				if !verticals.contains(&segment) {
+					verticals.push(segment);
+				}
+			} else {
+				if !horizontals.contains(&segment) {
+					horizontals.push(segment);
+				}
+				self.key.insert('a', segment);
+			}
+		}
+
+		println!("\ngot a");
+		println!("key: {:?}", self.key);
+		println!("horizontals: {:?}", horizontals);
+		println!("verticals: {:?}\n", verticals);
+
+		// find 2, 3, and 5 - the three segments in all of them will give you the three horizontal segments but not in order
+		let mut group235: Vec<SevenSegmentDisplay> = vec![];
+		for segment in &self.patterns {
+			if segment.get_lit_segment_count() == 5 {
+				group235.push(segment.clone());
+			}
+		}
+		for s0 in group235[0].get_lit_segments() {
+			for s1 in group235[1].get_lit_segments() {
+				if s0 == s1 {
+					if group235[2].get_lit_segments().contains(&s0) {
+						if !horizontals.contains(&s0) {
+							horizontals.push(s0);
+						}
+					}
+				}
+			}
+		}
+
+		println!("\ngot all horizontals");
+		println!("key: {:?}", self.key);
+		println!("horizontals: {:?}", horizontals);
+		println!("verticals: {:?}\n", verticals);
+
+
+// d	// find 4 - once you have all of the horizontal segments you can tell one is segment d since a is already taken and g doesn't exist here
+		let four = self.get_pattern(4);
+		for segment in four.get_lit_segments() {
+			if horizontals.contains(&segment) {
+				let mut found = false;
+				for (_, v) in self.key.iter() {
+					if *v == segment {
+						found = true;
+					}
+				}
+				if !found {
+					self.key.insert('d', segment);
+				}
+			} else {
+				if !verticals.contains(&segment) {
+					verticals.push(segment);
+				}
+			}
+		}
+
+		println!("\ngot d and another vertical");
+		println!("key: {:?}", self.key);
+		println!("horizontals: {:?}", horizontals);
+		println!("verticals: {:?}\n", verticals);
+
+// g	// g is the last remaining horizontal
+		for h in &horizontals {
+			let mut found = false;
+			for (_, v) in self.key.iter() {
+				if v == h {
+					found = true;
+				}
+			}
+			if !found {
+				self.key.insert('g', *h);
+				break;
+			}
+		}
+		println!("\ngot g");
+		println!("key: {:?}", self.key);
+		println!("horizontals: {:?}", horizontals);
+		println!("verticals: {:?}\n", verticals);
+
+// b	// find 1 and 4 - once you have d, figuring out b is process of elimination
+		for h in &verticals {
+			let mut found = false;
+			for (_, v) in self.key.iter() {
+				if v == h {
+					found = true;
+				}
+			}
+			if !found {
+				self.key.insert('b', *h);
+				break;
+			}
+		}
+		println!("\ngot b");
+		println!("key: {:?}", self.key);
+		println!("horizontals: {:?}", horizontals);
+		println!("verticals: {:?}\n", verticals);
+
+
+// e	// find 0 and 1 -once you have all horizontals, segment b, and the flippable position of c and f you can get e
+		let mut group0: Vec<SevenSegmentDisplay> = vec![];
+		for display in &self.patterns {
+			if display.get_lit_segment_count() == 6 {
+				let mut horiz_count = 0;
+				for segment in display.get_lit_segments() {
+					if horizontals.contains(&segment) {
+						horiz_count += 1;
+					}
+				}
+				if horiz_count == 2 {
+					group0.push(display.clone());
+				}
+			}
+		}
+
+		let zero = &group0[0];
+		for segment in &zero.get_lit_segments() {
+			// can't be a horizontal 
+			if !horizontals.contains(&segment) {
+				// can't be in one
+				if one.get_lit_segments().contains(&segment) {
+					// can't be a known key
+					let mut found = false;
+					for (_, v) in self.key.iter() {
+						if v == segment {
+							found = true;
+						}
+					}
+					if !found {
+						self.key.insert('e', *segment);
+						if !verticals.contains(&segment) {
+							verticals.push(*segment);
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		println!("\ngot e");
+		println!("key: {:?}", self.key);
+		println!("horizontals: {:?}", horizontals);
+		println!("verticals: {:?}\n", verticals);
+
+		// find 6 adn by process of elimination you can get f
+		let mut group6: Vec<SevenSegmentDisplay> = vec![];
+		for display in &self.patterns {
+			if display.get_lit_segment_count() == 6 {
+				let mut horiz_count = 0;
+				for segment in display.get_lit_segments() {
+					if horizontals.contains(&segment) {
+						horiz_count += 1;
+					}
+				}
+				if horiz_count == 3 {
+					// make sure it does not contain the same as one
+					let mut one_count = 0;
+					for segment in display.get_lit_segments() {
+						if one.get_lit_segments().contains(&segment) {
+							one_count += 1;
+						}
+					}
+
+					if one_count == 1 {
+						group6.push(display.clone());
+					}
+				}
+			}
+		}
+
+		let six = &group6[0];
+		
+		// can't be a known key
+		for segment in six.get_lit_segments() {
+			let mut found = false;
+			for (_, v) in self.key.iter() {
+				if *v == segment {
+					found = true;
+				}
+			}
+			if !found {
+				self.key.insert('f', segment);
+				if !verticals.contains(&segment) {
+					verticals.push(segment);
+				}
+				break;
+			}
+		}
+
+		println!("\ngot f");
+		println!("key: {:?}", self.key);
+		println!("horizontals: {:?}", horizontals);
+		println!("verticals: {:?}\n", verticals);
+
+
+		// last remaining entry can be pulled from eight
+		let eight = self.get_pattern(8);
+		for segment in eight.get_lit_segments() {
+			let mut found = false;
+			for (_, v) in self.key.iter() {
+				if *v == segment {
+					found = true;
+				}
+			}
+			if !found {
+				self.key.insert('c', segment);
+				if !verticals.contains(&segment) {
+					verticals.push(segment);
+				}
+				break;
+			}
+		}
+
+		println!("\ngot c");
+		println!("key: {:?}", self.key);
+		println!("horizontals: {:?}", horizontals);
+		println!("verticals: {:?}\n", verticals);
+
+
+		// flip b and e to check
+		let old_b = self.key.get(&'b').unwrap().clone();
+		let old_e = self.key.get(&'e').unwrap().clone();
+		self.key.insert('e', old_b);
+		self.key.insert('b', old_e);
+
+
+		// full map is built, so now just iterate through the outputs and rebuild
+		for display in &mut self.output {
+			let mut new_display_str: String = String::default();
+			for segment in display.get_lit_segments() {
+				for (k, v) in self.key.iter() {
+					if *v == segment {
+						new_display_str += &k.to_string();
+					}
+				}
+			}
+
+			println!("display {}", display);
+			println!("str {:?}", new_display_str);
+			display.set_to(SevenSegmentDisplay::from(new_display_str).get_value());
+			display.decoded = true;
+		}
 	}
 
 	fn naive_decode(&mut self) {
