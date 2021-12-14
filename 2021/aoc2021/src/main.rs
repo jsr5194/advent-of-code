@@ -46,18 +46,18 @@ fn run_day(day_num: usize) {
 			aoc::day11::run_part_1();
 			aoc::day11::run_part_2();
 		},
-//		12 => {
-//			aoc::day12::run_part_1();
-//			aoc::day12::run_part_2();
-//		},
-//		13 => {
-//			aoc::day13::run_part_1();
-//			aoc::day13::run_part_2();
-//		},
-//		14 => {
-//			aoc::day14::run_part_1();
-//			aoc::day14::run_part_2();
-//		},
+		12 => {
+			aoc::day12::run_part_1();
+			aoc::day12::run_part_2();
+		},
+		13 => {
+			aoc::day13::run_part_1();
+			aoc::day13::run_part_2();
+		},
+		14 => {
+			aoc::day14::run_part_1();
+			aoc::day14::run_part_2();
+		},
 //		15 => {
 //			aoc::day15::run_part_1();
 //			aoc::day15::run_part_2();
@@ -108,5 +108,6 @@ fn run_day(day_num: usize) {
 
 fn main() {	
 	//run_day(9);
-	run_day(11);
+	//run_day(12);
+	run_day(14);
 }
