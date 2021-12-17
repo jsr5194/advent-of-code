@@ -2,7 +2,7 @@ use std::fs;
 use hex::decode;
 
 fn get_input() -> Packet {
-	let filename = "./src/day16/input_test_1.txt";
+	let filename = "./src/day16/input_test_2.txt";
 	let contents_str = fs::read_to_string(filename).expect("[!] ERROR: an error occurred while reading the file");
 	let contents: Packet = Packet::from(contents_str);
 	contents
@@ -11,6 +11,8 @@ fn get_input() -> Packet {
 /// run Day 16 Part 1
 pub fn run_part_1() {
 	let mut pkt = get_input();
+	pkt.parse();
+	println!("{:?}", pkt);
 	println!("[*] Day 16 Part 1 Result: TODO");
 }
 
@@ -46,6 +48,87 @@ struct Packet {
 	version: u8,
 	type_id: TypeId,
 	data: Vec<u8>,
+	subpacket_bit_count: u16,
+	subpacket_count: u16,
+}
+
+impl Packet {
+	fn parse(&mut self) {
+		match self.type_id {
+			TypeId::LITERALVALUE => self.parse_as_literal(),
+			TypeId::OPERATOR => self.parse_as_operator(),
+			_ => panic!("unimplemented type id encountered: {:?}", self.type_id),
+		}
+	}
+
+	fn parse_as_literal(&mut self) {
+		let mut bit_count = 0x00;
+		let mut finished = false;
+		let mut literal: u32 = 0x00;
+		for byte in &self.data {
+			let mut mask = 0b10000000;
+			for bit_idx in (0..8).rev() {
+				// sequence is 1 bit for state and 4 bits for data
+				if bit_count % 0x05 == 0 {
+					// 1 means more data; 0 means last data
+					if byte & mask == 0 {
+						finished = true;
+					}
+				} else {
+					literal = literal << 1;
+					literal = literal | (((byte & mask) >> bit_idx) as u32);
+				}
+
+				mask = mask >> 1;
+				bit_count += 1;
+			}
+
+			if finished {
+				break;
+			}
+		}
+		println!("literal: {:?}", literal);
+	}
+
+	fn parse_as_operator(&mut self) {
+		let mut bit_count = 0x00;
+		let mut build_byte: u16 = 0x00;
+		let mut length_type_id: u32 = 0xFF;
+		let mut finished = false;
+		for byte in &self.data {
+			let mut mask = 0b10000000;
+			for bit_idx in (0..8).rev() {
+				if bit_count == 0 {
+					length_type_id = ((byte & mask) >> bit_idx) as u32;
+				} else {
+					match length_type_id {
+						0 => {
+							build_byte = build_byte << 1;
+							build_byte = build_byte | ((byte & mask) as u16);
+							if bit_count == 16 {
+								self.subpacket_bit_count = build_byte;
+								finished = true;
+								break;
+							}
+						},
+						1 => {
+							build_byte = build_byte << 1;
+							build_byte = build_byte | ((byte & mask) as u16);
+							if bit_count == 12 {
+								self.subpacket_count = build_byte;
+								finished = true;
+								break;
+							}
+						},
+						_ => panic!("invalid length type id: {:?}", length_type_id),
+					}
+				}
+
+				mask = mask >> 1;
+				bit_count += 1;
+			}
+		}
+	}
 }
 
 impl From<String> for Packet {
@@ -54,11 +137,10 @@ impl From<String> for Packet {
 		let hdr_vec = hex::decode(&pkt_str[..2]).unwrap();
 		pkt.version = (hdr_vec[0] & 0b11100000) >> 0x05;
 		pkt.type_id = TypeId::from((hdr_vec[0] & 0b00011100) >> 0x02);
-		let mut raw_data = hex::decode(&pkt_str).unwrap();
 		let mut first_run = true;
 		let mut bit_count = 0x00;
 		let mut build_byte = 0x00;
-		for cur_byte in raw_data {
+		for cur_byte in hex::decode(&pkt_str).unwrap() {
 			if !first_run {
 				let mut mask = 0b10000000;
 				for shift in (0..8).rev() {
