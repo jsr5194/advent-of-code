@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 regex = "1"
-intrusive-collections = "0.9"
+hex = "0.3"
 
 [dev-dependencies]
 criterion = "0.3"
