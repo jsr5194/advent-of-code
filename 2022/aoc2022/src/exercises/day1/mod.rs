@@ -32,6 +32,17 @@ pub fn run_part1(filename: &str) -> usize {
     largest_cal
 }
 
+pub fn run_part1_iter(filename: &str) -> usize {
+    let largest_cal = get_input(&filename)
+        .iter()
+        .map(|elf| elf.get_total_calories_iter())
+        .max()
+        .unwrap();
+
+    info!("Part 1 iter Answer: {:?}", largest_cal);
+    largest_cal
+}
+
 pub fn run_part2(filename: &str) -> usize {
     let elves = get_input(&filename);
     let mut cals = vec![];
@@ -44,20 +55,36 @@ pub fn run_part2(filename: &str) -> usize {
     largest_cal
 }
 
+pub fn run_part2_iter(filename: &str) -> usize {
+    let mut cals = get_input(&filename)
+        .iter()
+        .map(|elf| elf.get_total_calories_iter())
+        .collect::<Vec<usize>>();
+
+    cals.sort();
+    let largest_cal = cals[cals.len() - 3..cals.len()].iter().sum();
+    info!("Part 2 iter Answer: {:?}", largest_cal);
+    largest_cal
+}
+
 #[cfg(test)]
 mod tests {
     use crate::exercises::day1::run_part1;
+    use crate::exercises::day1::run_part1_iter;
     use crate::exercises::day1::run_part2;
+    use crate::exercises::day1::run_part2_iter;
     #[test]
     fn test() {
         assert_eq!(run_part1("./src/exercises/day1/input_test.txt"), 24000);
         assert_eq!(run_part1("./src/exercises/day1/input.txt"), 71300);
+        assert_eq!(run_part1_iter("./src/exercises/day1/input.txt"), 71300);
         assert_eq!(run_part2("./src/exercises/day1/input_test.txt"), 45000);
-        assert_eq!(run_part2("./src/exercises/day1/input.txt"), 209691)
+        assert_eq!(run_part2("./src/exercises/day1/input.txt"), 209691);
+        assert_eq!(run_part2_iter("./src/exercises/day1/input.txt"), 209691)
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Food {
     calories: usize,
 }
@@ -82,5 +109,9 @@ impl Elf {
             total_cal += item.calories;
         }
         total_cal
+    }
+
+    fn get_total_calories_iter(&self) -> usize {
+        self.food.iter().map(|food| food.calories).sum::<usize>()
     }
 }

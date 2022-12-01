@@ -9,8 +9,14 @@ pub fn day1_benchmark(c: &mut Criterion) {
     c.bench_function("day 1 part 1", |b| {
         b.iter(|| aoc::exercises::day1::run_part1("./src/exercises/day1/input.txt"))
     });
+    c.bench_function("day 1 part 1 iter", |b| {
+        b.iter(|| aoc::exercises::day1::run_part1_iter("./src/exercises/day1/input.txt"))
+    });
     c.bench_function("day 1 part 2", |b| {
         b.iter(|| aoc::exercises::day1::run_part2("./src/exercises/day1/input.txt"))
+    });
+    c.bench_function("day 1 part 2 iter", |b| {
+        b.iter(|| aoc::exercises::day1::run_part2_iter("./src/exercises/day1/input.txt"))
     });
 }
 
