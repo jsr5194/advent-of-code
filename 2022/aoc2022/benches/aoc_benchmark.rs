@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, Criterion};
 
 use aoc2022 as aoc;
 
-criterion_group!(benches, day1_benchmark);
+criterion_group!(benches, day2_benchmark);
 criterion_main!(benches);
 
 pub fn day1_benchmark(c: &mut Criterion) {
