@@ -1,17 +1,20 @@
 use log::info;
-use std::fs;
 
-fn get_input(filename: &str) {
-    let contents_str = fs::read_to_string(&filename).expect("could not read file");
-}
+pub fn process_input(filedata: &String) {}
 
-pub fn run_part1(filename: &str) {
+pub fn run_part1(filedata: &String) {
     info!("running part 1");
+    part1();
 }
 
-pub fn run_part2(filename: &str) {
+pub fn part1() {}
+
+pub fn run_part2(filedata: &String) {
     info!("running part 2");
+    part2();
 }
+
+pub fn part2() {}
 
 #[cfg(test)]
 mod tests {

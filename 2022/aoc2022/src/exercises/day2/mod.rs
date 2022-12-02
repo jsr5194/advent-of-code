@@ -1,35 +1,56 @@
 use log::info;
-use std::fs;
 
-fn get_input(filename: &str) -> Tournament {
-    let contents_str = fs::read_to_string(&filename).expect("could not read file");
-    Tournament::from(contents_str)
+pub fn process_input(filedata: &String) -> Tournament {
+    Tournament::from(filedata)
 }
 
-pub fn run_part1(filename: &str) -> usize {
-    let mut tournament = get_input(&filename);
-    tournament.play_tournament_p1();
+pub fn run_part1(filedata: &String) -> usize {
+    let mut tournament = process_input(filedata);
+    part1(&mut tournament);
     info!("Day 2 Answer: {:?}", tournament.player2);
     tournament.player2
 }
 
-pub fn run_part2(filename: &str) -> usize {
-    let mut tournament = get_input(&filename);
-    tournament.play_tournament_p2();
+pub fn part1(tournament: &mut Tournament) -> usize {
+    tournament.play_tournament_p1();
+    tournament.player2
+}
+
+pub fn run_part2(filedata: &String) -> usize {
+    let mut tournament = process_input(filedata);
+    part2(&mut tournament);
     info!("Day 2 Answer: {:?}", tournament.player2);
+    tournament.player2
+}
+
+pub fn part2(tournament: &mut Tournament) -> usize {
+    tournament.play_tournament_p2();
     tournament.player2
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::common::read_file;
     use crate::exercises::day2::run_part1;
     use crate::exercises::day2::run_part2;
     #[test]
     fn test() {
-        assert_eq!(run_part1("./src/exercises/day2/input_test.txt"), 15);
-        assert_eq!(run_part1("./src/exercises/day2/input.txt"), 13009);
-        assert_eq!(run_part2("./src/exercises/day2/input_test.txt"), 12);
-        assert_eq!(run_part2("./src/exercises/day2/input.txt"), 10398)
+        assert_eq!(
+            run_part1(&read_file("./src/exercises/day2/input_test.txt")),
+            15
+        );
+        assert_eq!(
+            run_part1(&read_file("./src/exercises/day2/input.txt")),
+            13009
+        );
+        assert_eq!(
+            run_part2(&read_file("./src/exercises/day2/input_test.txt")),
+            12
+        );
+        assert_eq!(
+            run_part2(&read_file("./src/exercises/day2/input.txt")),
+            10398
+        )
     }
 }
 
@@ -251,14 +272,14 @@ impl Round {
 }
 
 #[derive(Debug, Default, Clone)]
-struct Tournament {
+pub struct Tournament {
     player1: usize,
     player2: usize,
     games: Vec<Round>,
 }
 
-impl From<String> for Tournament {
-    fn from(encrypted_strategy_guide: String) -> Self {
+impl From<&String> for Tournament {
+    fn from(encrypted_strategy_guide: &String) -> Self {
         Tournament {
             player1: 0,
             player2: 0,

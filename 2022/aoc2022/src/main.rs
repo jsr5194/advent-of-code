@@ -17,106 +17,131 @@ fn main() {
     let args = Args::parse();
     match args.day {
         1 => {
-            aoc::exercises::day1::run_part1("./src/exercises/day1/input.txt");
-            aoc::exercises::day1::run_part1_iter("./src/exercises/day1/input.txt");
-            aoc::exercises::day1::run_part2("./src/exercises/day1/input.txt");
-            aoc::exercises::day1::run_part2_iter("./src/exercises/day1/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day1/input.txt");
+            aoc::exercises::day1::run_part1(&input);
+            aoc::exercises::day1::run_part1_iter(&input);
+            aoc::exercises::day1::run_part2(&input);
+            aoc::exercises::day1::run_part2_iter(&input);
         }
         2 => {
-            aoc::exercises::day2::run_part1("./src/exercises/day2/input.txt");
-            aoc::exercises::day2::run_part2("./src/exercises/day2/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day2/input.txt");
+            aoc::exercises::day2::run_part1(&input);
+            aoc::exercises::day2::run_part2(&input);
         }
         3 => {
-            aoc::exercises::day3::run_part1("./src/exercises/day3/input.txt");
-            aoc::exercises::day3::run_part2("./src/exercises/day3/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day3/input.txt");
+            aoc::exercises::day3::run_part1(&input);
+            aoc::exercises::day3::run_part2(&input);
         }
         4 => {
-            aoc::exercises::day4::run_part1("./src/exercises/day4/input.txt");
-            aoc::exercises::day4::run_part2("./src/exercises/day4/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day4/input.txt");
+            aoc::exercises::day4::run_part1(&input);
+            aoc::exercises::day4::run_part2(&input);
         }
         5 => {
-            aoc::exercises::day5::run_part1("./src/exercises/day5/input.txt");
-            aoc::exercises::day5::run_part2("./src/exercises/day5/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day5/input.txt");
+            aoc::exercises::day5::run_part1(&input);
+            aoc::exercises::day5::run_part2(&input);
         }
         6 => {
-            aoc::exercises::day6::run_part1("./src/exercises/day6/input.txt");
-            aoc::exercises::day6::run_part2("./src/exercises/day6/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day6/input.txt");
+            aoc::exercises::day6::run_part1(&input);
+            aoc::exercises::day6::run_part2(&input);
         }
         7 => {
-            aoc::exercises::day7::run_part1("./src/exercises/day7/input.txt");
-            aoc::exercises::day7::run_part2("./src/exercises/day7/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day7/input.txt");
+            aoc::exercises::day7::run_part1(&input);
+            aoc::exercises::day7::run_part2(&input);
         }
         8 => {
-            aoc::exercises::day8::run_part1("./src/exercises/day8/input.txt");
-            aoc::exercises::day8::run_part2("./src/exercises/day8/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day8/input.txt");
+            aoc::exercises::day8::run_part1(&input);
+            aoc::exercises::day8::run_part2(&input);
         }
         9 => {
-            aoc::exercises::day9::run_part1("./src/exercises/day9/input.txt");
-            aoc::exercises::day9::run_part2("./src/exercises/day9/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day9/input.txt");
+            aoc::exercises::day9::run_part1(&input);
+            aoc::exercises::day9::run_part2(&input);
         }
         10 => {
-            aoc::exercises::day10::run_part1("./src/exercises/day10/input.txt");
-            aoc::exercises::day10::run_part2("./src/exercises/day10/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day10/input.txt");
+            aoc::exercises::day10::run_part1(&input);
+            aoc::exercises::day10::run_part2(&input);
         }
         11 => {
-            aoc::exercises::day11::run_part1("./src/exercises/day11/input.txt");
-            aoc::exercises::day11::run_part2("./src/exercises/day11/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day11/input.txt");
+            aoc::exercises::day11::run_part1(&input);
+            aoc::exercises::day11::run_part2(&input);
         }
         12 => {
-            aoc::exercises::day12::run_part1("./src/exercises/day12/input.txt");
-            aoc::exercises::day12::run_part2("./src/exercises/day12/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day12/input.txt");
+            aoc::exercises::day12::run_part1(&input);
+            aoc::exercises::day12::run_part2(&input);
         }
         13 => {
-            aoc::exercises::day13::run_part1("./src/exercises/day13/input.txt");
-            aoc::exercises::day13::run_part2("./src/exercises/day13/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day13/input.txt");
+            aoc::exercises::day13::run_part1(&input);
+            aoc::exercises::day13::run_part2(&input);
         }
         14 => {
-            aoc::exercises::day14::run_part1("./src/exercises/day14/input.txt");
-            aoc::exercises::day14::run_part2("./src/exercises/day14/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day14/input.txt");
+            aoc::exercises::day14::run_part1(&input);
+            aoc::exercises::day14::run_part2(&input);
         }
         15 => {
-            aoc::exercises::day15::run_part1("./src/exercises/day15/input.txt");
-            aoc::exercises::day15::run_part2("./src/exercises/day15/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day15/input.txt");
+            aoc::exercises::day15::run_part1(&input);
+            aoc::exercises::day15::run_part2(&input);
         }
         16 => {
-            aoc::exercises::day16::run_part1("./src/exercises/day16/input.txt");
-            aoc::exercises::day16::run_part2("./src/exercises/day16/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day16/input.txt");
+            aoc::exercises::day16::run_part1(&input);
+            aoc::exercises::day16::run_part2(&input);
         }
         17 => {
-            aoc::exercises::day17::run_part1("./src/exercises/day17/input.txt");
-            aoc::exercises::day17::run_part2("./src/exercises/day17/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day17/input.txt");
+            aoc::exercises::day17::run_part1(&input);
+            aoc::exercises::day17::run_part2(&input);
         }
         18 => {
-            aoc::exercises::day18::run_part1("./src/exercises/day18/input.txt");
-            aoc::exercises::day18::run_part2("./src/exercises/day18/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day18/input.txt");
+            aoc::exercises::day18::run_part1(&input);
+            aoc::exercises::day18::run_part2(&input);
         }
         19 => {
-            aoc::exercises::day19::run_part1("./src/exercises/day19/input.txt");
-            aoc::exercises::day19::run_part2("./src/exercises/day19/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day19/input.txt");
+            aoc::exercises::day19::run_part1(&input);
+            aoc::exercises::day19::run_part2(&input);
         }
         20 => {
-            aoc::exercises::day20::run_part1("./src/exercises/day20/input.txt");
-            aoc::exercises::day20::run_part2("./src/exercises/day20/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day20/input.txt");
+            aoc::exercises::day20::run_part1(&input);
+            aoc::exercises::day20::run_part2(&input);
         }
         21 => {
-            aoc::exercises::day21::run_part1("./src/exercises/day21/input.txt");
-            aoc::exercises::day21::run_part2("./src/exercises/day21/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day21/input.txt");
+            aoc::exercises::day21::run_part1(&input);
+            aoc::exercises::day21::run_part2(&input);
         }
         22 => {
-            aoc::exercises::day22::run_part1("./src/exercises/day22/input.txt");
-            aoc::exercises::day22::run_part2("./src/exercises/day22/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day22/input.txt");
+            aoc::exercises::day22::run_part1(&input);
+            aoc::exercises::day22::run_part2(&input);
         }
         23 => {
-            aoc::exercises::day23::run_part1("./src/exercises/day23/input.txt");
-            aoc::exercises::day23::run_part2("./src/exercises/day23/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day23/input.txt");
+            aoc::exercises::day23::run_part1(&input);
+            aoc::exercises::day23::run_part2(&input);
         }
         24 => {
-            aoc::exercises::day24::run_part1("./src/exercises/day24/input.txt");
-            aoc::exercises::day24::run_part2("./src/exercises/day24/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day24/input.txt");
+            aoc::exercises::day24::run_part1(&input);
+            aoc::exercises::day24::run_part2(&input);
         }
         25 => {
-            aoc::exercises::day25::run_part1("./src/exercises/day25/input.txt");
-            aoc::exercises::day25::run_part2("./src/exercises/day25/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day25/input.txt");
+            aoc::exercises::day25::run_part1(&input);
+            aoc::exercises::day25::run_part2(&input);
         }
         _ => panic!("invalid day picked"),
     }
