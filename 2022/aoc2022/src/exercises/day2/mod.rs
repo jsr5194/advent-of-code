@@ -1,4 +1,6 @@
+use anyhow::{anyhow, Result};
 use log::info;
+use std::convert::TryFrom;
 
 pub fn process_input(filedata: &String) -> Tournament {
     Tournament::from(filedata)
@@ -61,16 +63,17 @@ enum Handshape {
     Scissors,
 }
 
-impl From<&str> for Handshape {
-    fn from(raw_shape: &str) -> Self {
+impl TryFrom<&str> for Handshape {
+    type Error = anyhow::Error;
+    fn try_from(raw_shape: &str) -> Result<Self> {
         match raw_shape {
-            "A" => Handshape::Rock,
-            "B" => Handshape::Paper,
-            "C" => Handshape::Scissors,
-            "X" => Handshape::Rock,
-            "Y" => Handshape::Paper,
-            "Z" => Handshape::Scissors,
-            _ => panic!("Invalid handshape detected"),
+            "A" => Ok(Handshape::Rock),
+            "B" => Ok(Handshape::Paper),
+            "C" => Ok(Handshape::Scissors),
+            "X" => Ok(Handshape::Rock),
+            "Y" => Ok(Handshape::Paper),
+            "Z" => Ok(Handshape::Scissors),
+            _ => Err(anyhow!("Invalid handshape detected")),
         }
     }
 }
@@ -85,16 +88,17 @@ enum Strategy {
     Win,
 }
 
-impl From<&str> for Strategy {
-    fn from(raw_shape: &str) -> Self {
+impl TryFrom<&str> for Strategy {
+    type Error = anyhow::Error;
+    fn try_from(raw_shape: &str) -> Result<Self> {
         match raw_shape {
-            "A" => Strategy::Rock,
-            "B" => Strategy::Paper,
-            "C" => Strategy::Scissors,
-            "X" => Strategy::Lose,
-            "Y" => Strategy::Draw,
-            "Z" => Strategy::Win,
-            _ => panic!("Invalid strategy detected"),
+            "A" => Ok(Strategy::Rock),
+            "B" => Ok(Strategy::Paper),
+            "C" => Ok(Strategy::Scissors),
+            "X" => Ok(Strategy::Lose),
+            "Y" => Ok(Strategy::Draw),
+            "Z" => Ok(Strategy::Win),
+            _ => Err(anyhow!("Invalid strategy detected")),
         }
     }
 }
@@ -110,12 +114,12 @@ impl From<&str> for Round {
         Round {
             playersp1: raw_round
                 .split(" ")
-                .map(|raw_shape| Handshape::from(raw_shape))
+                .map(|raw_shape| Handshape::try_from(raw_shape).unwrap())
                 .collect::<Vec<Handshape>>(),
 
             playersp2: raw_round
                 .split(" ")
-                .map(|raw_strategy| Strategy::from(raw_strategy))
+                .map(|raw_strategy| Strategy::try_from(raw_strategy).unwrap())
                 .collect::<Vec<Strategy>>(),
         }
     }
