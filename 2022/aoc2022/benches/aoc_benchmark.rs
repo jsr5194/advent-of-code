@@ -10,16 +10,21 @@ macro_rules! build_bench {
             let input: String = aoc::common::read_file(
                 format!("./src/exercises/{}/input.txt", stringify!($day)).as_str(),
             );
-            let processed_input = aoc::exercises::$day::process_input(&input);
 
+            let processed_input_1 = aoc::exercises::$day::process_input_p1(&input);
             c.bench_function("{} process_input", |b| {
-                b.iter(|| aoc::exercises::$day::process_input(&input))
+                b.iter(|| aoc::exercises::$day::process_input_p1(&input))
             });
             c.bench_function(format!("{} part_1", stringify!($day)).as_str(), |b| {
-                b.iter(|| aoc::exercises::$day::part1(&processed_input))
+                b.iter(|| aoc::exercises::$day::part1(&processed_input_1))
+            });
+
+            let processed_input_2 = aoc::exercises::$day::process_input_p2(&input);
+            c.bench_function("{} process_input", |b| {
+                b.iter(|| aoc::exercises::$day::process_input_p2(&input))
             });
             c.bench_function(format!("{} part_2", stringify!($day)).as_str(), |b| {
-                b.iter(|| aoc::exercises::$day::part2(&processed_input))
+                b.iter(|| aoc::exercises::$day::part2(&processed_input_2))
             });
         }
     };
@@ -45,8 +50,8 @@ macro_rules! build_bench_mut {
     };
 }
 
-build_bench_mut!(day2);
-criterion_group!(single, day2);
+build_bench!(day3);
+criterion_group!(single, day3);
 criterion_main!(single);
 
 //pub fn day1_benchmark(c: &mut Criterion) {
