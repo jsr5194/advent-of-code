@@ -45,8 +45,8 @@ macro_rules! build_bench_mut {
     };
 }
 
-build_bench_mut!(day3);
-criterion_group!(single, day3);
+build_bench_mut!(day4);
+criterion_group!(single, day4);
 criterion_main!(single);
 
 //pub fn day1_benchmark(c: &mut Criterion) {
