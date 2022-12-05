@@ -1,5 +1,6 @@
 use log::info;
 use std::collections::HashSet;
+use std::iter::FromIterator;
 
 pub fn process_input(filedata: &String) -> Vec<SectionAssignmentPair> {
     filedata
@@ -11,7 +12,7 @@ pub fn process_input(filedata: &String) -> Vec<SectionAssignmentPair> {
 pub fn run_part1(filedata: &String) -> usize {
     let section_assignment_pairs = process_input(filedata);
     let result = part1(&section_assignment_pairs);
-    println!("Day 4 Part 1 Answer: {:?}", result);
+    info!("Day 4 Part 1 Answer: {:?}", result);
     result
 }
 
@@ -31,7 +32,7 @@ pub fn part1(section_assignment_pairs: &Vec<SectionAssignmentPair>) -> usize {
 pub fn run_part2(filedata: &String) -> usize {
     let section_assignment_pairs = process_input(filedata);
     let result = part2(&section_assignment_pairs);
-    println!("Day 4 Part 2 Answer: {:?}", result);
+    info!("Day 4 Part 2 Answer: {:?}", result);
     result
 }
 
@@ -88,19 +89,42 @@ impl From<&str> for SectionAssignmentPair {
             .map(|x| x.parse::<usize>().unwrap())
             .collect::<Vec<usize>>();
 
-        let mut assignment1: HashSet<usize> = HashSet::new();
-        for i in assignment1_split[0]..=assignment1_split[1] {
-            assignment1.insert(i);
-        }
-
-        let mut assignment2: HashSet<usize> = HashSet::new();
-        for i in assignment2_split[0]..=assignment2_split[1] {
-            assignment2.insert(i);
-        }
-
         SectionAssignmentPair {
-            assignment1: assignment1,
-            assignment2: assignment2,
+            assignment1: HashSet::from_iter(assignment1_split[0]..=assignment1_split[1]),
+            assignment2: HashSet::from_iter(assignment2_split[0]..=assignment2_split[1]),
         }
     }
 }
+
+//impl From<&str> for SectionAssignmentPair {
+//    fn from(raw_pair: &str) -> Self {
+//        let mut raw_pair_split = raw_pair.split(',');
+//        let assignment1_split = raw_pair_split
+//            .next()
+//            .unwrap()
+//            .split('-')
+//            .map(|x| x.parse::<usize>().unwrap())
+//            .collect::<Vec<usize>>();
+//        let assignment2_split = raw_pair_split
+//            .next()
+//            .unwrap()
+//            .split('-')
+//            .map(|x| x.parse::<usize>().unwrap())
+//            .collect::<Vec<usize>>();
+//
+//        let mut assignment1: HashSet<usize> = HashSet::new();
+//        for i in assignment1_split[0]..=assignment1_split[1] {
+//            assignment1.insert(i);
+//        }
+//
+//        let mut assignment2: HashSet<usize> = HashSet::new();
+//        for i in assignment2_split[0]..=assignment2_split[1] {
+//            assignment2.insert(i);
+//        }
+//
+//        SectionAssignmentPair {
+//            assignment1: assignment1,
+//            assignment2: assignment2,
+//        }
+//    }
+//}
