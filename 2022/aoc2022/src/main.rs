@@ -39,7 +39,7 @@ fn main() {
             aoc::exercises::day4::run_part2(&input);
         }
         5 => {
-            let input = aoc::common::read_file("./src/exercises/day5/input.txt");
+            let input = aoc::common::read_file_notrim("./src/exercises/day5/input.txt");
             aoc::exercises::day5::run_part1(&input);
             aoc::exercises::day5::run_part2(&input);
         }

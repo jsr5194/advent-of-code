@@ -24,6 +24,26 @@ macro_rules! build_bench {
         }
     };
 }
+macro_rules! build_bench_notrim {
+    ($day:ident) => {
+        pub fn $day(c: &mut Criterion) {
+            let input: String = aoc::common::read_file_notrim(
+                format!("./src/exercises/{}/input.txt", stringify!($day)).as_str(),
+            );
+            let processed_input = aoc::exercises::$day::process_input(&input);
+
+            c.bench_function("{} process_input", |b| {
+                b.iter(|| aoc::exercises::$day::process_input(&input))
+            });
+            c.bench_function(format!("{} part_1", stringify!($day)).as_str(), |b| {
+                b.iter(|| aoc::exercises::$day::part1(&processed_input))
+            });
+            c.bench_function(format!("{} part_2", stringify!($day)).as_str(), |b| {
+                b.iter(|| aoc::exercises::$day::part2(&processed_input))
+            });
+        }
+    };
+}
 macro_rules! build_bench_mut {
     ($day:ident) => {
         pub fn $day(c: &mut Criterion) {
@@ -44,9 +64,31 @@ macro_rules! build_bench_mut {
         }
     };
 }
+macro_rules! build_bench_notrim_mut {
+    ($day:ident) => {
+        pub fn $day(c: &mut Criterion) {
+            let input: String = aoc::common::read_file_notrim(
+                format!("./src/exercises/{}/input.txt", stringify!($day)).as_str(),
+            );
+            c.bench_function("{} process_input", |b| {
+                b.iter(|| aoc::exercises::$day::process_input(&input))
+            });
+            c.bench_function(format!("{} part_1", stringify!($day)).as_str(), |b| {
+                b.iter(|| {
+                    aoc::exercises::$day::part1(&mut aoc::exercises::$day::process_input(&input))
+                })
+            });
+            c.bench_function(format!("{} part_2", stringify!($day)).as_str(), |b| {
+                b.iter(|| {
+                    aoc::exercises::$day::part2(&mut aoc::exercises::$day::process_input(&input))
+                })
+            });
+        }
+    };
+}
 
-build_bench_mut!(day4);
-criterion_group!(single, day4);
+build_bench_notrim_mut!(day5);
+criterion_group!(single, day5);
 criterion_main!(single);
 
 //pub fn day1_benchmark(c: &mut Criterion) {
