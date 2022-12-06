@@ -87,8 +87,8 @@ macro_rules! build_bench_notrim_mut {
     };
 }
 
-build_bench_notrim_mut!(day5);
-criterion_group!(single, day5);
+build_bench!(day6);
+criterion_group!(single, day6);
 criterion_main!(single);
 
 //pub fn day1_benchmark(c: &mut Criterion) {
