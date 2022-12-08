@@ -54,7 +54,7 @@ fn main() {
             aoc::exercises::day7::run_part2(&input);
         }
         8 => {
-            let input = aoc::common::read_file("./src/exercises/day8/input.txt");
+            let input = aoc::common::read_file("./src/exercises/day8/input_test.txt");
             aoc::exercises::day8::run_part1(&input);
             aoc::exercises::day8::run_part2(&input);
         }
