@@ -2,7 +2,7 @@ use log::info;
 
 pub fn process_input(filedata: &String) {}
 
-pub fn run_part1(filedata: &String) {
+pub fn run_part1(filedata: &String) -> usize {
     // process_input(filedata)
     let result = part1();
     info!("Day 9 Part 1 Answer: {}", result);
@@ -13,7 +13,7 @@ pub fn part1() -> usize {
     0
 }
 
-pub fn run_part2(filedata: &String) {
+pub fn run_part2(filedata: &String) -> usize {
     // process_input(filedata)
     let result = part1();
     info!("Day 9 Part 2 Answer: {}", result);
