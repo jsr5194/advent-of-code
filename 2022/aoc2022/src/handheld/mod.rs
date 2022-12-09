@@ -24,18 +24,11 @@ pub struct HandheldFilesystem {
 
 impl HandheldFilesystem {
     fn add_file(&mut self, raw_working_dir: String, filename: String, filesize: usize) {
-        //        let mut full_path = String::default();
-        //        if raw_working_dir == String::from("/") {
-        //            full_path = format!("{}{}", raw_working_dir, filename);
-        //        } else {
-        //            full_path = format!("{}/{}", raw_working_dir, filename);
-        //        }
         self.files.push_back(HandheldFile {
             name: filename.clone(),
             dir: raw_working_dir.clone(),
             size: filesize.clone(),
         });
-        //println!("Adding file: {:?}", &full_path);
     }
 }
 
@@ -87,7 +80,6 @@ impl Handheld {
                 match split_line.next().unwrap() {
                     "cd" => {
                         let dir = split_line.next().unwrap();
-                        //println!("{}$ cd {}", &working_dir, dir);
                         if dir == "/" {
                             working_dir = String::from("/");
                         } else if dir == ".." {
@@ -95,8 +87,18 @@ impl Handheld {
                             for dir_idx in
                                 0..working_dir.split("/").collect::<Vec<&str>>().len() - 1
                             {
-                                new_working_dir =
-                                    format!("/{}", working_dir.split("/").nth(dir_idx).unwrap());
+                                if new_working_dir == "/".to_string() {
+                                    new_working_dir = format!(
+                                        "/{}",
+                                        working_dir.split("/").nth(dir_idx).unwrap()
+                                    );
+                                } else {
+                                    new_working_dir = format!(
+                                        "{}/{}",
+                                        new_working_dir,
+                                        working_dir.split("/").nth(dir_idx).unwrap()
+                                    );
+                                }
                             }
                             working_dir = new_working_dir;
                         } else {
@@ -109,13 +111,11 @@ impl Handheld {
                         idx += 1;
                     }
                     "ls" => {
-                        //println!("{}$ ls", working_dir);
                         idx += 1;
                         while idx < raw_stdout_lines.len() {
                             if raw_stdout_lines[idx].chars().next().unwrap() == '$' {
                                 break;
                             } else {
-                                //println!("{}$ {}", &working_dir, raw_stdout_lines[idx]);
                                 let split_line = raw_stdout_lines[idx]
                                     .split(" ")
                                     .map(|x| x.to_string())
@@ -138,8 +138,45 @@ impl Handheld {
                     }
                 }
             }
-            //println!("{}$", working_dir);
         }
+    }
+
+    pub fn calculate_fs_size(&self) -> HashMap<String, usize> {
+        let mut dir_sizes: HashMap<String, usize> = HashMap::new();
+        for file in self.get_fs() {
+            let dir = file.get_dir();
+            if dir == &"/".to_string() {
+                let mut cur_dir = dir.to_string();
+                if dir_sizes.contains_key(&cur_dir) {
+                    if let Some(size) = dir_sizes.get_mut(&cur_dir.to_string()) {
+                        *size += file.get_filesize();
+                    } else {
+                        unreachable!("could not get mutable dir size 1");
+                    }
+                } else {
+                    dir_sizes.insert(cur_dir.to_string(), *file.get_filesize());
+                }
+            } else {
+                let mut cur_dir = String::default();
+                for raw_dir in file.get_dir().split("/") {
+                    cur_dir = format!("{}/{}", cur_dir, raw_dir.to_string());
+                    if cur_dir == "".to_string() {
+                        cur_dir = "/".to_string()
+                    }
+                    if dir_sizes.contains_key(&cur_dir) {
+                        if let Some(size) = dir_sizes.get_mut(&cur_dir.to_string()) {
+                            *size += file.get_filesize();
+                        } else {
+                            unreachable!("could not get mutable dir size 2");
+                        }
+                    } else {
+                        dir_sizes.insert(cur_dir.to_string(), *file.get_filesize());
+                    }
+                }
+            }
+        }
+
+        dir_sizes
     }
 
     fn find_unique_sequence_idx(&self, size: usize) -> usize {
