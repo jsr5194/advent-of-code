@@ -15,7 +15,7 @@ pub fn part1() -> usize {
 
 pub fn run_part2(filedata: &String) -> usize {
     // process_input(filedata)
-    let result = part1();
+    let result = part2();
     info!("Day 9 Part 2 Answer: {}", result);
     result
 }
@@ -26,6 +26,7 @@ pub fn part2() -> usize {
 
 #[cfg(test)]
 mod tests {
+    use crate::common::read_file;
     use crate::exercises::day1::run_part1;
     use crate::exercises::day1::run_part2;
     #[test]
