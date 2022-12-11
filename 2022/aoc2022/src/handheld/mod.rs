@@ -1,4 +1,147 @@
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::fmt;
+
+#[derive(Debug, Clone)]
+pub struct HandheldCrt {
+    display: VecDeque<VecDeque<char>>,
+    width: usize,
+    height: usize,
+}
+
+impl HandheldCrt {
+    fn light_pixel(&mut self, cycle: isize) {
+        println!("cycle {:?}", cycle);
+        let row = usize::try_from(cycle / isize::try_from(self.width).unwrap()).unwrap();
+        let col = usize::try_from(cycle % isize::try_from(self.width).unwrap()).unwrap();
+        println!("lighting: ({},{})", row, col);
+        self.display[row][col] = '#'
+    }
+}
+
+impl fmt::Display for HandheldCrt {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut msg =
+            format!("\n         Handheld CRT Display\n========================================\n");
+        for row in &self.display {
+            for pixel in row {
+                msg = format!("{}{}", msg, pixel);
+            }
+            msg = format!("{}\n", msg);
+        }
+        write!(f, "{}", msg)
+    }
+}
+
+impl Default for HandheldCrt {
+    fn default() -> Self {
+        let height = 6;
+        let width = 40;
+        let mut crt: VecDeque<VecDeque<char>> = VecDeque::new();
+        for i in 0..height {
+            let mut row: VecDeque<char> = VecDeque::new();
+            for j in 0..width {
+                row.push_back('.');
+            }
+            crt.push_back(row.clone());
+        }
+        HandheldCrt {
+            display: crt.clone(),
+            height: height,
+            width: width,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+enum HandheldInstruction {
+    Noop,
+    Addx { value: isize },
+}
+
+#[derive(Debug, Clone)]
+pub struct HandheldCpu {
+    pause: bool,
+    ip: usize,
+    cycle: isize,
+    executing: bool,
+    program: VecDeque<HandheldInstruction>,
+    registers: HashMap<String, isize>,
+}
+
+impl Default for HandheldCpu {
+    fn default() -> Self {
+        let mut default_registers = HashMap::new();
+        default_registers.insert("X".to_string(), 1);
+        HandheldCpu {
+            pause: false,
+            ip: 0,
+            cycle: 1,
+            executing: false,
+            program: VecDeque::new(),
+            registers: default_registers.clone(),
+        }
+    }
+}
+
+impl HandheldCpu {
+    fn load_program(&mut self, raw_program: &String) {
+        for raw_instr in raw_program.lines() {
+            let mut split_instr = raw_instr.split(" ");
+            match split_instr.next().unwrap() {
+                "noop" => self.program.push_back(HandheldInstruction::Noop),
+                "addx" => self.program.push_back(HandheldInstruction::Addx {
+                    value: split_instr.next().unwrap().parse::<isize>().unwrap(),
+                }),
+                _ => unreachable!("Invalid instruction detected during parsing"),
+            }
+        }
+    }
+    fn reset(&mut self) {
+        let mut default_registers = HashMap::new();
+        default_registers.insert("X".to_string(), 1);
+        self.pause = false;
+        self.ip = 0;
+        self.cycle = 1;
+        self.executing = false;
+        self.program = VecDeque::new();
+        self.registers = default_registers.clone();
+    }
+    fn run(&mut self) {
+        self.debug(-1);
+    }
+    fn debug(&mut self, breakpoint: isize) {
+        while !self.pause {
+            if self.ip >= self.program.len() {
+                // program is finished
+                self.pause = true;
+            } else if self.cycle == breakpoint {
+                // hit our inspection point
+                self.pause = true;
+            } else {
+                match self.program[self.ip] {
+                    HandheldInstruction::Noop => {
+                        self.ip += 1;
+                    }
+                    HandheldInstruction::Addx { value } => {
+                        if let Some(regX) = self.registers.get_mut(&"X".to_string()) {
+                            if self.executing {
+                                *regX += value;
+                                self.executing = false;
+                                self.ip += 1;
+                            } else {
+                                self.executing = true;
+                            }
+                        } else {
+                            unreachable!("could not get the X register");
+                        }
+                    }
+                }
+                self.cycle += 1;
+            }
+        }
+        self.pause = false;
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct HandheldFile {
@@ -39,6 +182,8 @@ pub struct Handheld {
     msg_magic_len: usize,
     packet_data: VecDeque<char>,
     fs: HandheldFilesystem,
+    cpu: HandheldCpu,
+    crt: HandheldCrt,
 }
 
 impl Default for Handheld {
@@ -49,6 +194,8 @@ impl Default for Handheld {
             msg_magic_len: 14,
             packet_data: VecDeque::default(),
             fs: HandheldFilesystem::default(),
+            cpu: HandheldCpu::default(),
+            crt: HandheldCrt::default(),
         }
     }
 }
@@ -58,12 +205,45 @@ impl Handheld {
         format!("Handheld v{}", self.version)
     }
 
+    pub fn reset(&mut self) {
+        self.cpu.reset()
+    }
+
     pub fn get_fs(&self) -> &VecDeque<HandheldFile> {
         &self.fs.files
     }
 
+    pub fn print_display(&self) {
+        println!("{}", self.crt)
+    }
+
     pub fn ingest_packet(&mut self, raw_packet_data: &String) {
         self.packet_data = raw_packet_data.chars().collect::<VecDeque<char>>()
+    }
+
+    pub fn run_program(&mut self) {
+        for cycle in 0..240 {
+            self.cpu.debug(cycle + 1);
+            let sprite_idx = self.cpu.registers.get(&"X".to_string()).unwrap();
+            println!("sprite_idx: {}, cycle: {}", sprite_idx, cycle % 40);
+            let c2 = cycle % 40;
+            if sprite_idx - 1 == c2 || *sprite_idx == c2 || sprite_idx + 1 == c2 {
+                self.crt.light_pixel(cycle);
+            }
+        }
+    }
+
+    pub fn debug_program(&mut self, breakpoint: isize) {
+        self.cpu.debug(breakpoint);
+    }
+
+    pub fn load_program(&mut self, program: &String) {
+        self.cpu.load_program(&program);
+    }
+
+    pub fn get_signal_strength(&self) -> isize {
+        let sum = self.cpu.cycle * self.cpu.registers.get(&"X".to_string()).unwrap();
+        sum
     }
 
     pub fn build_fs_from_stdout(&mut self, raw_stdout: &String) {
