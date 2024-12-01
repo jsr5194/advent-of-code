@@ -75,25 +75,21 @@ mod tests {
     use crate::exercises::day1::run_part2;
     #[test]
     fn test() {
-        //        assert_eq!(
-        //            run_part1(&read_file("./src/exercises/day1/input_test.txt")),
-        //            142
-        //        );
-        //        assert_eq!(
-        //            run_part1(&read_file("./src/exercises/day1/input.txt")),
-        //            54632
-        //        );
-        //        assert_eq!(
-        //            run_part2(&read_file("./src/exercises/day1/input_test_2.txt")),
-        //            281
-        //        );
-        //        assert_eq!(
-        //            run_part2(&read_file("./src/exercises/day1/input.txt")),
-        //            209691
-        //        );
-        //        assert_eq!(
-        //            run_part2_iter(&read_file("./src/exercises/day1/input.txt")),
-        //            209691
-        //        )
+        assert_eq!(
+            run_part1(&read_file("./src/exercises/day1/input_test.txt")),
+            11
+        );
+        assert_eq!(
+            run_part1(&read_file("./src/exercises/day1/input.txt")),
+            2769675
+        );
+        assert_eq!(
+            run_part2(&read_file("./src/exercises/day1/input_test.txt")),
+            31
+        );
+        assert_eq!(
+            run_part2(&read_file("./src/exercises/day1/input.txt")),
+            24643097
+        )
     }
 }
