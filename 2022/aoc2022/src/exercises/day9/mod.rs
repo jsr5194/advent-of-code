@@ -71,6 +71,10 @@ mod tests {
             run_part2(&read_file("./src/exercises/day9/input_test_2.txt")),
             36
         );
+        assert_eq!(
+            run_part2(&read_file("./src/exercises/day9/input.txt")),
+            2541
+        );
     }
 }
 

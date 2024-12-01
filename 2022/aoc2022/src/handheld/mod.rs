@@ -1,3 +1,4 @@
+use log::info;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt;
 
@@ -10,10 +11,10 @@ pub struct HandheldCrt {
 
 impl HandheldCrt {
     fn light_pixel(&mut self, cycle: isize) {
-        println!("cycle {:?}", cycle);
+        //println!("cycle {:?}", cycle);
         let row = usize::try_from(cycle / isize::try_from(self.width).unwrap()).unwrap();
         let col = usize::try_from(cycle % isize::try_from(self.width).unwrap()).unwrap();
-        println!("lighting: ({},{})", row, col);
+        //println!("lighting: ({},{})", row, col);
         self.display[row][col] = '#'
     }
 }
@@ -214,7 +215,7 @@ impl Handheld {
     }
 
     pub fn print_display(&self) {
-        println!("{}", self.crt)
+        info!("{}", self.crt)
     }
 
     pub fn ingest_packet(&mut self, raw_packet_data: &String) {
@@ -225,7 +226,7 @@ impl Handheld {
         for cycle in 0..240 {
             self.cpu.debug(cycle + 1);
             let sprite_idx = self.cpu.registers.get(&"X".to_string()).unwrap();
-            println!("sprite_idx: {}, cycle: {}", sprite_idx, cycle % 40);
+            //println!("sprite_idx: {}, cycle: {}", sprite_idx, cycle % 40);
             let c2 = cycle % 40;
             if sprite_idx - 1 == c2 || *sprite_idx == c2 || sprite_idx + 1 == c2 {
                 self.crt.light_pixel(cycle);
