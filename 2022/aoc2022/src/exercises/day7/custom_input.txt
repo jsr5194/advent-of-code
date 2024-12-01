@@ -1,0 +1,17 @@
+$ cd /
+$ ls
+10000000 file1
+100 file2
+dir dir1
+dir dir2
+$ cd dir1
+$ cd dir3
+$ cd dir4
+$ ls
+100 file3
+$ cd ..
+$ cd ..
+$ cd ..
+$ cd dir2
+$ ls
+100 file4
