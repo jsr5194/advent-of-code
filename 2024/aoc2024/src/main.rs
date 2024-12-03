@@ -30,11 +30,15 @@ fn main() {
             aoc::exercises::day2::run_part1(&input);
             aoc::exercises::day2::run_part2(&input);
         }
-        //        3 => {
-        //            let input = aoc::common::read_file("./src/exercises/day3/input.txt");
-        //            aoc::exercises::day3::run_part1(&input);
-        //            aoc::exercises::day3::run_part2(&input);
-        //        }
+        3 => {
+            let input_test = aoc::common::read_file("./src/exercises/day3/input_test.txt");
+            let input_test_2 = aoc::common::read_file("./src/exercises/day3/input_test_2.txt");
+            let input = aoc::common::read_file("./src/exercises/day3/input.txt");
+            aoc::exercises::day3::run_part1(&input_test);
+            aoc::exercises::day3::run_part1(&input);
+            aoc::exercises::day3::run_part2(&input_test_2);
+            aoc::exercises::day3::run_part2(&input);
+        }
         //        4 => {
         //            let input = aoc::common::read_file("./src/exercises/day4/input.txt");
         //            aoc::exercises::day4::run_part1(&input);
