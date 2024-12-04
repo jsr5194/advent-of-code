@@ -1,7 +1,7 @@
 use log::info;
 use std::str::FromStr;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Level {
     value: usize,
     is_bad: bool,
@@ -21,7 +21,7 @@ impl FromStr for Level {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct Report {
     levels: Vec<Level>,
     is_decreasing: bool,
@@ -29,6 +29,14 @@ struct Report {
 }
 
 impl Report {
+    fn reset(&mut self) {
+        self.is_decreasing = false;
+        self.is_increasing = false;
+        for l in &mut self.levels {
+            l.is_bad = false;
+        }
+    }
+
     fn get_bad_level_count(&self) -> u32 {
         let mut bad_level_count = 0;
         for level in &self.levels {
@@ -40,19 +48,17 @@ impl Report {
     }
 
     fn find_bad_levels(&mut self) {
-        let mut max = &self.levels.len() - 1;
+        let mut max = self.levels.len() - 1;
         let mut first_run = true;
         let mut is_gradual = false;
         let mut contains_lateral = false;
         for idx in 0..max {
-            if idx + 1 > max {
-                break;
-            }
-
             // check if the levels are increasing
             if &self.levels[idx].value < &self.levels[idx + 1].value {
                 if self.is_decreasing {
+                    self.levels[0].is_bad = true;
                     self.levels[idx].is_bad = true;
+                    self.levels[idx + 1].is_bad = true;
                 } else {
                     self.is_increasing = true;
                     // check delta
@@ -62,14 +68,16 @@ impl Report {
                             is_gradual = true;
                         }
                     } else {
-                        self.levels[idx].is_bad = true;
+                        self.levels[idx + 1].is_bad = true;
                     }
                 }
             }
             // check if the levels are decreasing
             else if &self.levels[idx].value > &self.levels[idx + 1].value {
                 if self.is_increasing {
+                    self.levels[0].is_bad = true;
                     self.levels[idx].is_bad = true;
+                    self.levels[idx + 1].is_bad = true;
                 } else {
                     self.is_decreasing = true;
                     // check delta
@@ -79,7 +87,7 @@ impl Report {
                             is_gradual = true;
                         }
                     } else {
-                        self.levels[idx].is_bad = true;
+                        self.levels[idx + 1].is_bad = true;
                     }
                 }
             }
@@ -94,74 +102,29 @@ impl Report {
         }
     }
 
+    // Report { levels: [Level { value: 7, is_bad: false }, Level { value: 4, is_bad: true }, Level { value: 6, is_bad: true }, Level { value: 7, is_bad: true }, Level { value: 8, is_bad: true }, Level { value: 10, is_bad: true }, Level { value: 13, is_bad: true }, Level { value: 15, is_bad: true }], is_decreasing: true, is_increasing: false }
+
     fn is_repairable(&mut self) -> bool {
         // when there is more than one bad level there is no reason to attempt a repair
         self.find_bad_levels();
-        //if self.get_bad_level_count() > 1 {
-        if false {
-            return false;
-        } else {
-            let mut max = &self.levels.len() - 1;
-            let mut first_run = true;
-            let mut is_gradual = false;
-            let mut contains_lateral = false;
 
-            // check middle levels
-            for idx in 1..max {
-                if idx + 1 > max {
-                    break;
-                }
+        for idx in 0..self.levels.len() {
+            let mut test_report = self.clone();
+            println!("{:?}", test_report);
+            test_report.reset();
+            test_report.levels.remove(idx);
+            test_report.find_bad_levels();
+            println!("{:?}", test_report);
 
-                // only proceed when the current level is bad
-                if !&self.levels[idx].is_bad {
-                    continue;
-                }
-
-                // check if the levels are increasing
-                if &self.levels[idx - 1].value < &self.levels[idx + 1].value {
-                    if self.is_decreasing && !first_run {
-                        return false;
-                    } else {
-                        self.is_increasing = true;
-                        // check delta
-                        if is_gradual || first_run {
-                            let delta = &self.levels[idx + 1].value - &self.levels[idx - 1].value;
-                            if delta >= 1 && delta <= 3 {
-                                is_gradual = true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    }
-                }
-                // check if the levels are decreasing
-                else if &self.levels[idx - 1].value > &self.levels[idx + 1].value {
-                    if self.is_increasing && !first_run {
-                        return false;
-                    } else {
-                        self.is_decreasing = true;
-                        // check delta
-                        if is_gradual || first_run {
-                            let delta = &self.levels[idx - 1].value - &self.levels[idx + 1].value;
-                            if delta >= 1 && delta <= 3 {
-                                is_gradual = true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    }
-                }
-                // check for lateral movement
-                else if &self.levels[idx - 1].value == &self.levels[idx + 1].value {
-                    return false;
-                }
-
-                if first_run {
-                    first_run = false;
-                }
+            if test_report.get_bad_level_count() == 0 {
+                return true;
+            } else {
+                println!("not repairable");
             }
+            println!("")
         }
-        return true;
+
+        return false;
     }
 }
 
@@ -180,8 +143,6 @@ impl ReportList {
         for report in &mut self.reports {
             if report.is_repairable() {
                 repairable_report_count += 1;
-            } else {
-                println!("{:?}", report);
             }
         }
         repairable_report_count
@@ -228,14 +189,14 @@ pub fn run_part1(filedata: &String) -> u32 {
 
 pub fn run_part2(filedata: &String) -> u32 {
     let mut report_list = process_input(filedata);
-    let repairable_reports = report_list.get_repairable_report_count();
-    let result = repairable_reports;
-    println!("Part 2 Result: {:?}", result);
+    for report in &mut report_list.reports {
+        report.find_bad_levels();
+    }
 
-    // 748 == too high
-    // 742 == too high
-    // 678 == too low
-    // 711 == not the right answer, but direction not given
+    let good_reports = report_list.get_total_report_count() - report_list.get_bad_report_count();
+    let repairable_reports = report_list.get_repairable_report_count();
+    let result = good_reports + repairable_reports;
+    println!("Part 2 Result: {:?}", repairable_reports);
     result
 }
 
