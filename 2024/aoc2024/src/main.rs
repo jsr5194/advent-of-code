@@ -39,16 +39,18 @@ fn main() {
             aoc::exercises::day3::run_part2(&input_test_2);
             aoc::exercises::day3::run_part2(&input);
         }
-        //        4 => {
-        //            let input = aoc::common::read_file("./src/exercises/day4/input.txt");
-        //            aoc::exercises::day4::run_part1(&input);
-        //            aoc::exercises::day4::run_part2(&input);
-        //        }
-        //        5 => {
-        //            let input = aoc::common::read_file_notrim("./src/exercises/day5/input.txt");
-        //            aoc::exercises::day5::run_part1(&input);
-        //            aoc::exercises::day5::run_part2(&input);
-        //        }
+        4 => {
+            //let input = aoc::common::read_file("./src/exercises/day4/input_test.txt");
+            let input = aoc::common::read_file("./src/exercises/day4/input.txt");
+            aoc::exercises::day4::run_part1(&input);
+            aoc::exercises::day4::run_part2(&input);
+        }
+        5 => {
+            let input = aoc::common::read_file("./src/exercises/day5/input_test.txt");
+            //let input = aoc::common::read_file("./src/exercises/day5/input.txt");
+            aoc::exercises::day5::run_part1(&input);
+            aoc::exercises::day5::run_part2(&input);
+        }
         //        6 => {
         //            let input = aoc::common::read_file("./src/exercises/day6/input.txt");
         //            aoc::exercises::day6::run_part1(&input);
