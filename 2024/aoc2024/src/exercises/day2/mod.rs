@@ -110,18 +110,13 @@ impl Report {
 
         for idx in 0..self.levels.len() {
             let mut test_report = self.clone();
-            println!("{:?}", test_report);
             test_report.reset();
             test_report.levels.remove(idx);
             test_report.find_bad_levels();
-            println!("{:?}", test_report);
 
             if test_report.get_bad_level_count() == 0 {
                 return true;
-            } else {
-                println!("not repairable");
             }
-            println!("")
         }
 
         return false;
@@ -194,9 +189,8 @@ pub fn run_part2(filedata: &String) -> u32 {
     }
 
     let good_reports = report_list.get_total_report_count() - report_list.get_bad_report_count();
-    let repairable_reports = report_list.get_repairable_report_count();
-    let result = good_reports + repairable_reports;
-    println!("Part 2 Result: {:?}", repairable_reports);
+    let result = report_list.get_repairable_report_count();
+    println!("Part 2 Result: {:?}", result);
     result
 }
 
@@ -216,9 +210,6 @@ mod tests {
             run_part2(&read_file("./src/exercises/day2/input_test.txt")),
             4
         );
-        //        assert_eq!(
-        //            run_part2(&read_file("./src/exercises/day2/input.txt")),
-        //            24643097
-        //        )
+        assert_eq!(run_part2(&read_file("./src/exercises/day2/input.txt")), 692)
     }
 }
