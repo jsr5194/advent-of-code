@@ -56,11 +56,12 @@ fn main() {
         //            aoc::exercises::day6::run_part1(&input);
         //            aoc::exercises::day6::run_part2(&input);
         //        }
-        //        7 => {
-        //            let input = aoc::common::read_file("./src/exercises/day7/input.txt");
-        //            aoc::exercises::day7::run_part1(&input);
-        //            aoc::exercises::day7::run_part2(&input);
-        //        }
+        7 => {
+            //let input = aoc::common::read_file("./src/exercises/day7/input_test.txt");
+            let input = aoc::common::read_file("./src/exercises/day7/input.txt");
+            aoc::exercises::day7::run_part1(&input);
+            aoc::exercises::day7::run_part2(&input);
+        }
         //        8 => {
         //            let input = aoc::common::read_file("./src/exercises/day8/input.txt");
         //            aoc::exercises::day8::run_part1(&input);
